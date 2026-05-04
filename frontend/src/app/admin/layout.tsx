@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
     LayoutDashboard,
     FileText,
     FolderKanban,
     Tags,
-    Users,
     GraduationCap,
     Briefcase,
     Wrench,
@@ -19,6 +18,8 @@ import {
     LogOut,
     Menu,
     X,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/api';
 import type { User } from '@/types';
@@ -39,33 +40,39 @@ const navigation = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
+    const pathname = usePathname();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('admin_sidebar_collapsed');
+        if (stored === 'true') setCollapsed(true);
+    }, []);
+
+    const toggleCollapsed = () => {
+        setCollapsed(prev => {
+            localStorage.setItem('admin_sidebar_collapsed', String(!prev));
+            return !prev;
+        });
+    };
 
     useEffect(() => {
         const checkAuth = async () => {
             const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
-            if (!token) {
-                router.push('/admin-login');
-                return;
-            }
-
+            if (!token) { router.push('/admin-login'); return; }
             try {
                 const userData = await getCurrentUser(token);
-                if (!userData.is_superuser) {
-                    throw new Error('Not authorized');
-                }
+                if (!userData.is_superuser) throw new Error('Not authorized');
                 setUser(userData);
-            } catch (error) {
+            } catch {
                 localStorage.removeItem('auth_token');
                 router.push('/admin-login');
             } finally {
                 setLoading(false);
             }
         };
-
         checkAuth();
     }, [router]);
 
@@ -76,113 +83,123 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
-                <div className="text-center">
-                    <div className="spinner h-8 w-8 text-primary-500 mx-auto mb-4" />
-                    <p className="text-slate-600 dark:text-slate-400">Loading...</p>
-                </div>
+            <div className="min-h-screen flex items-center justify-center bg-[#080808]">
+                <p className="font-mono text-xs text-[#444]">// LOADING</p>
             </div>
         );
     }
 
-    if (!user) {
-        return null;
-    }
+    if (!user) return null;
+
+    const sidebarW = collapsed ? 'w-16' : 'w-56';
+    const mainPl = collapsed ? 'lg:pl-16' : 'lg:pl-56';
 
     return (
-        <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
-            {/* Mobile sidebar backdrop */}
-            {sidebarOpen && (
+        <div className="min-h-screen bg-[#080808]">
+            {mobileOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
+                    className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+                    onClick={() => setMobileOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 transform transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                    }`}
+                className={`fixed inset-y-0 left-0 z-50 ${sidebarW} bg-[#0a0a0a] border-r border-[#1c1c1c] flex flex-col transition-all duration-200
+                    ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
             >
-                <div className="flex flex-col h-full">
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                        <Link href="/admin" className="text-lg font-bold gradient-text">
-                            Admin Panel
+                {/* Header */}
+                <div className={`flex items-center border-b border-[#1c1c1c] h-14 px-3 ${collapsed ? 'justify-center' : 'justify-between'}`}>
+                    {!collapsed && (
+                        <Link href="/admin" className="font-mono text-xs tracking-[0.2em] text-[#c9a84c] truncate">
+                            [ ADMIN ]
                         </Link>
+                    )}
+                    <div className="flex items-center gap-1">
                         <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                            onClick={() => setMobileOpen(false)}
+                            className="lg:hidden p-1.5 text-[#444] hover:text-[#e2d9c8] transition-colors"
                         >
-                            <X className="h-5 w-5" />
+                            <X className="h-4 w-4" />
                         </button>
-                    </div>
-
-                    {/* Navigation */}
-                    <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-                        {navigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                <item.icon className="h-5 w-5" />
-                                {item.name}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    {/* Footer */}
-                    <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-medium">
-                                {user.full_name?.[0] || user.email[0].toUpperCase()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                                    {user.full_name || 'Admin'}
-                                </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                    {user.email}
-                                </p>
-                            </div>
-                        </div>
                         <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            onClick={toggleCollapsed}
+                            className="hidden lg:flex p-1.5 text-[#444] hover:text-[#e2d9c8] transition-colors"
+                            title={collapsed ? 'Expand' : 'Collapse'}
                         >
-                            <LogOut className="h-4 w-4" />
-                            Sign Out
+                            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </button>
                     </div>
                 </div>
+
+                {/* Nav */}
+                <nav className="flex-1 overflow-y-auto py-3 space-y-px px-2">
+                    {navigation.map((item) => {
+                        const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+                        return (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => setMobileOpen(false)}
+                                title={collapsed ? item.name : undefined}
+                                className={`flex items-center gap-3 px-2 py-2 text-sm transition-colors
+                                    ${active
+                                        ? 'text-[#c9a84c] bg-[#c9a84c]/5 border-l-2 border-[#c9a84c]'
+                                        : 'text-[#555] hover:bg-[#111] hover:text-[#e2d9c8] border-l-2 border-transparent'}
+                                    ${collapsed ? 'justify-center' : ''}`}
+                            >
+                                <item.icon className="h-4 w-4 flex-shrink-0" />
+                                {!collapsed && <span className="font-mono text-xs tracking-wide truncate">{item.name.toUpperCase()}</span>}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Footer */}
+                <div className="p-2 border-t border-[#1c1c1c]">
+                    {!collapsed && (
+                        <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                            <div className="w-6 h-6 bg-[#c9a84c]/10 border border-[#c9a84c]/20 flex items-center justify-center text-[#c9a84c] font-mono text-xs flex-shrink-0">
+                                {(user.full_name?.[0] || user.email[0]).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-mono text-[10px] text-[#e2d9c8] truncate">{user.full_name || 'Admin'}</p>
+                                <p className="font-mono text-[10px] text-[#444] truncate">{user.email}</p>
+                            </div>
+                        </div>
+                    )}
+                    <button
+                        onClick={handleLogout}
+                        title={collapsed ? 'Sign Out' : undefined}
+                        className={`flex items-center gap-2 w-full px-2 py-2 font-mono text-xs text-red-400 hover:bg-red-900/10 transition-colors ${collapsed ? 'justify-center' : ''}`}
+                    >
+                        <LogOut className="h-4 w-4 flex-shrink-0" />
+                        {!collapsed && 'SIGN OUT'}
+                    </button>
+                </div>
             </aside>
 
-            {/* Main content */}
-            <div className="lg:pl-64">
+            {/* Main */}
+            <div className={`transition-all duration-200 ${mainPl}`}>
                 {/* Top bar */}
-                <header className="sticky top-0 z-30 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center justify-between px-4 py-3">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                        >
-                            <Menu className="h-6 w-6" />
-                        </button>
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                            >
-                                View Site →
-                            </a>
-                        </div>
-                    </div>
+                <header className="sticky top-0 z-30 bg-[#0a0a0a] border-b border-[#1c1c1c] h-14 flex items-center px-4 gap-4">
+                    <button
+                        onClick={() => setMobileOpen(true)}
+                        className="lg:hidden p-2 text-[#444] hover:text-[#e2d9c8] -ml-2 transition-colors"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </button>
+                    <div className="flex-1" />
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-xs text-[#444] hover:text-[#c9a84c] transition-colors"
+                    >
+                        VIEW SITE →
+                    </a>
                 </header>
 
-                {/* Page content */}
                 <main className="p-6">{children}</main>
             </div>
         </div>

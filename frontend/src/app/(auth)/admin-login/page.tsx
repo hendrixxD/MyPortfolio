@@ -13,28 +13,18 @@ export default function AdminLoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Check if already logged in
     useEffect(() => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        if (token) {
-            router.push('/admin');
-        }
+        if (token) router.push('/admin');
     }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
-
         try {
             const response = await login({ email, password });
-
-            // Store token in localStorage
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('auth_token', response.access_token);
-            }
-
-            // Redirect to dashboard
+            if (typeof window !== 'undefined') localStorage.setItem('auth_token', response.access_token);
             router.push('/admin');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
@@ -44,29 +34,28 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 py-12 px-4">
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <h1 className="text-2xl font-bold gradient-text">lengedandungjoshua</h1>
-                    <p className="text-slate-600 dark:text-slate-400 mt-2">Admin Dashboard</p>
+        <div className="min-h-screen flex items-center justify-center bg-[#080808] py-12 px-4">
+            <div className="w-full max-w-sm">
+
+                {/* Header */}
+                <div className="mb-8">
+                    <p className="font-mono text-xs tracking-[0.2em] text-[#c9a84c] mb-1">[ ADMIN ]</p>
+                    <p className="font-mono text-xs text-[#444]">// sign in to continue</p>
                 </div>
 
-                {/* Login Card */}
-                <div className="card p-8">
-                    <h2 className="text-2xl font-semibold text-center mb-6">Sign In</h2>
-
+                {/* Form */}
+                <div className="border border-[#1c1c1c] p-6">
                     {error && (
-                        <div className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
-                            <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                            <p className="text-sm">{error}</p>
+                        <div className="flex items-center gap-2 p-3 mb-5 border border-red-800/40 bg-red-900/10 text-red-400">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                            <p className="font-mono text-xs">{error}</p>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label htmlFor="email" className="label">
-                                Email Address
+                            <label htmlFor="email" className="block font-mono text-[10px] tracking-[0.1em] text-[#555] mb-1.5 uppercase">
+                                Email
                             </label>
                             <input
                                 type="email"
@@ -74,7 +63,7 @@ export default function AdminLoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="input"
+                                className="input-field"
                                 placeholder="admin@example.com"
                                 disabled={loading}
                                 autoComplete="email"
@@ -82,7 +71,7 @@ export default function AdminLoginPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="label">
+                            <label htmlFor="password" className="block font-mono text-[10px] tracking-[0.1em] text-[#555] mb-1.5 uppercase">
                                 Password
                             </label>
                             <div className="relative">
@@ -92,7 +81,7 @@ export default function AdminLoginPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="input pr-10"
+                                    className="input-field pr-10"
                                     placeholder="••••••••"
                                     disabled={loading}
                                     autoComplete="current-password"
@@ -100,14 +89,10 @@ export default function AdminLoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-200 hover:scale-110 active:scale-95 p-1 rounded"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] transition-colors p-1"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                 >
-                                    {showPassword ? (
-                                        <EyeOff className="h-5 w-5 transition-transform duration-200" />
-                                    ) : (
-                                        <Eye className="h-5 w-5 transition-transform duration-200" />
-                                    )}
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
@@ -115,30 +100,21 @@ export default function AdminLoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`btn-primary w-full ${loading ? 'btn-loading' : 'btn-pulse'}`}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#c9a84c] text-[#080808] font-mono text-xs hover:bg-[#d4b56a] transition-colors disabled:opacity-60 mt-2"
                         >
                             {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    <span className="shimmer-loading">Signing in...</span>
-                                </>
+                                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> SIGNING IN...</>
                             ) : (
-                                <>
-                                    <LogIn className="mr-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                                    Sign In
-                                </>
+                                <><LogIn className="h-3.5 w-3.5" /> SIGN IN</>
                             )}
                         </button>
                     </form>
                 </div>
 
-                {/* Back to site */}
-                <p className="text-center mt-6 text-sm text-slate-500 dark:text-slate-400">
-                    <a
-                        href="/"
-                        className="link-animated inline-flex items-center gap-1 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 hover:gap-2"
-                    >
-                        <span className="transition-transform duration-300 hover:-translate-x-1">←</span> Back to site
+                {/* Back */}
+                <p className="mt-6 font-mono text-xs text-center">
+                    <a href="/" className="text-[#444] hover:text-[#c9a84c] transition-colors">
+                        ← BACK TO SITE
                     </a>
                 </p>
             </div>
