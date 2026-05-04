@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.models.base import Base
 from app.models import (
     User, Tag, Article, Project, ProfileLink,
-    Education, Experience, Skill, Publication, ContactMessage
+    Education, Experience, Skill, Publication, ContactMessage, Coursework
 )
 
 # this is the Alembic Config object

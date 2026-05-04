@@ -40,7 +40,7 @@ class Coursework(Base, TimestampMixin):
     
     # Status
     is_highlighted = Column(Boolean, default=False)  # For featuring important courses
-    display_order = Column(Integer, default=0)
+    order = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     
     def __repr__(self):

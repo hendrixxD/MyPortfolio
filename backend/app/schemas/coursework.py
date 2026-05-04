@@ -24,7 +24,7 @@ class CourseworkBase(BaseModel):
     syllabus_url: Optional[str] = None
     certificate_url: Optional[str] = None
     is_highlighted: bool = False
-    display_order: int = 0
+    order: int = 0
     is_active: bool = True
 
 
@@ -51,7 +51,7 @@ class CourseworkUpdate(BaseModel):
     syllabus_url: Optional[str] = None
     certificate_url: Optional[str] = None
     is_highlighted: Optional[bool] = None
-    display_order: Optional[int] = None
+    order: Optional[int] = None
     is_active: Optional[bool] = None
 
 

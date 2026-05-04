@@ -3,15 +3,15 @@ services:
     image: postgres:15-alpine
     container_name: portfolio_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: portfolio
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5434:5432"
+      - "${DB_PORT}:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -22,16 +22,20 @@ services:
       dockerfile: Dockerfile
     container_name: portfolio_backend
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/portfolio
-      SECRET_KEY: super-secret-key-change-in-production
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-key-change-in-production}
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
       CORS_ORIGINS: http://localhost:3000,http://frontend:3000
       UPLOAD_DIR: /app/uploads
       RATE_LIMIT_PER_MINUTE: 60
-      SITE_NAME: lengedandungjoshua
-      SITE_DESCRIPTION: Data Engineer & Chemical/Petroleum Technology Portfolio
-      SITE_URL: http://localhost:3000
+      SITE_NAME: ${SITE_NAME:-lengedandungjoshua}
+      SITE_DESCRIPTION: ${SITE_DESCRIPTION:-Data Engineer & Chemical/Petroleum Technology Portfolio}
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
     volumes:
       - ./backend:/app
       - backend_uploads:/app/uploads
@@ -49,7 +53,7 @@ services:
     container_name: portfolio_frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
     volumes:
       - ./frontend:/app
       - /app/node_modules

@@ -4,6 +4,7 @@ File upload endpoint.
 import os
 import uuid
 from datetime import datetime
+from typing import Annotated
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from PIL import Image
 
@@ -34,8 +35,8 @@ def generate_unique_filename(original_filename: str) -> str:
 
 @router.post("/image")
 async def upload_image(
-    file: UploadFile = File(...),
-    admin: AdminUser = None
+    file: Annotated[UploadFile, File()],
+    admin: AdminUser
 ):
     """
     Upload an image file.
@@ -94,8 +95,15 @@ def delete_image(filename: str, admin: AdminUser):
     
     Admin only.
     """
-    file_path = os.path.join(settings.UPLOAD_DIR, filename)
-    
+    upload_dir = os.path.realpath(settings.UPLOAD_DIR)
+    file_path = os.path.realpath(os.path.join(settings.UPLOAD_DIR, filename))
+
+    if not file_path.startswith(upload_dir + os.sep):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+
     if not os.path.exists(file_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
