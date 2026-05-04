@@ -1,75 +1,52 @@
 'use client';
 
 import Link from 'next/link';
-import { Github, Linkedin, Twitter, Mail, Heart } from 'lucide-react';
+import { Github, Linkedin, Twitter, Mail } from 'lucide-react';
 
-const navigation = {
-    main: [
-        { name: 'Home', href: '/' },
-        { name: 'Articles', href: '/articles' },
-        { name: 'Projects', href: '/projects' },
-        { name: 'Contact', href: '/contact' },
-    ],
-    secondary: [
-        { name: 'Tech Profile', href: '/tech' },
-        { name: 'Academia', href: '/academia' },
-        { name: 'Gallery', href: '/gallery' },
-        { name: 'Resume', href: '/resume' },
-        { name: 'Profiles', href: '/profiles' },
-    ],
-    social: [
-        { name: 'GitHub', href: 'https://github.com/hendrixxD', icon: Github },
-        { name: 'LinkedIn', href: 'https://www.linkedin.com/in/lenge-dandung-joshua/', icon: Linkedin },
-        { name: 'Twitter', href: 'https://x.com/hendrixxjdl', icon: Twitter },
-        { name: 'Email', href: 'mailto:lengedandungjoshua@gmail.com', icon: Mail },
-    ],
-};
+const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'Articles', href: '/articles' },
+    { name: 'Projects', href: '/projects' },
+    { name: 'Tech', href: '/tech' },
+    { name: 'Academia', href: '/academia' },
+    { name: 'Gallery', href: '/gallery' },
+    { name: 'Contact', href: '/contact' },
+];
+
+const socialLinks = [
+    { name: 'GitHub', href: 'https://github.com/hendrixxD', icon: Github, handle: 'hendrixxD' },
+    { name: 'LinkedIn', href: 'https://www.linkedin.com/in/lenge-dandung-joshua/', icon: Linkedin, handle: 'lenge-dandung-joshua' },
+    { name: 'Twitter', href: 'https://x.com/hendrixxjdl', icon: Twitter, handle: '@hendrixxjdl' },
+    { name: 'Email', href: 'mailto:lengedandungjoshua@gmail.com', icon: Mail, handle: 'lengedandungjoshua@gmail.com' },
+];
 
 export function Footer() {
-    const currentYear = new Date().getFullYear();
-
     return (
-        <footer className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
+        <footer className="bg-[#080808] border-t border-[#1c1c1c]">
             <div className="container-custom py-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Brand */}
-                    <div className="md:col-span-2">
-                        <Link href="/" className="text-xl font-bold gradient-text">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    {/* Brand + bio */}
+                    <div>
+                        <Link href="/" className="text-[#e2d9c8] font-bold text-lg">
                             lengedandungjoshua
                         </Link>
-                        <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-md">
-                            Data Engineer & Chemical/Petroleum Technology professional. Building data pipelines
-                            and exploring the intersection of technology and science.
+                        <p className="mt-3 text-[#555] text-sm leading-relaxed max-w-xs">
+                            Data Engineer & Chemical/Petroleum Technology professional.
+                            Building data pipelines at the intersection of technology and science.
                         </p>
-
-                        {/* Social Links */}
-                        <div className="flex items-center space-x-3 mt-6">
-                            {navigation.social.map((item) => (
-                                <a
-                                    key={item.name}
-                                    href={item.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="social-icon p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:shadow-md"
-                                    aria-label={item.name}
-                                >
-                                    <item.icon className="h-5 w-5 transition-transform duration-300" />
-                                </a>
-                            ))}
-                        </div>
                     </div>
 
                     {/* Navigation */}
                     <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">
+                        <p className="font-mono text-[10px] tracking-[0.2em] text-[#c9a84c] mb-4 uppercase">
                             Navigation
-                        </h3>
+                        </p>
                         <ul className="space-y-2">
-                            {navigation.main.map((item) => (
+                            {navigation.map((item) => (
                                 <li key={item.name}>
                                     <Link
                                         href={item.href}
-                                        className="text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                                        className="text-[#666] hover:text-[#c9a84c] transition-colors font-mono text-sm"
                                     >
                                         {item.name}
                                     </Link>
@@ -78,44 +55,37 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    {/* More Links */}
+                    {/* Connect */}
                     <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">
-                            More
-                        </h3>
-                        <ul className="space-y-2">
-                            {navigation.secondary.map((item) => (
-                                <li key={item.name}>
-                                    <Link
-                                        href={item.href}
-                                        className="text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                        <p className="font-mono text-[10px] tracking-[0.2em] text-[#c9a84c] mb-4 uppercase">
+                            Connect
+                        </p>
+                        <ul className="space-y-3">
+                            {socialLinks.map((link) => (
+                                <li key={link.name}>
+                                    <a
+                                        href={link.href}
+                                        target={link.href.startsWith('mailto') ? undefined : '_blank'}
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 text-[#555] hover:text-[#c9a84c] transition-colors group"
                                     >
-                                        {item.name}
-                                    </Link>
+                                        <link.icon className="h-4 w-4 shrink-0" />
+                                        <span className="font-mono text-xs">{link.handle}</span>
+                                    </a>
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
 
-                {/* Bottom */}
-                <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
-                    <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                        <p className="text-sm text-slate-600 dark:text-slate-400 flex items-center justify-center">
-                            © {currentYear} lengedandungjoshua. Made with
-                            <Heart className="h-4 w-4 mx-1 text-red-500 animate-pulse" aria-label="love" />
-                            and lots of coffee.
-                        </p>
-                        <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-500">
-                            <Link href="/admin-login" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                                Admin
-                            </Link>
-                            <span>•</span>
-                            <a href="/rss.xml" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                                RSS
-                            </a>
-                        </div>
-                    </div>
+                {/* Bottom bar */}
+                <div className="mt-10 pt-8 border-t border-[#1c1c1c] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p className="font-mono text-xs text-[#444]">
+                        &copy; 2026 lengedandungjoshua
+                    </p>
+                    <p className="font-mono text-xs text-[#333]">
+                        Data Engineer &middot; Chemical/Petroleum Technology
+                    </p>
                 </div>
             </div>
         </footer>

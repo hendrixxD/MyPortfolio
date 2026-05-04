@@ -18,13 +18,13 @@ export interface Tag {
     id: number;
     name: string;
     slug: string;
-    type: 'article' | 'project' | 'both';
+    tag_type: 'article' | 'project' | 'both';
     color: string;
     article_count?: number;
     project_count?: number;
 }
 
-// Article types
+// Article types — full detail response
 export interface Article {
     id: number;
     title: string;
@@ -44,15 +44,29 @@ export interface Article {
     updated_at: string;
 }
 
+// Article brief — used in list/paginated responses
+export interface ArticleBrief {
+    id: number;
+    title: string;
+    slug: string;
+    summary: string | null;
+    cover_image: string | null;
+    status: 'draft' | 'published' | 'archived';
+    featured: boolean;
+    reading_time: number;
+    published_at: string | null;
+    tags: Tag[];
+}
+
 export interface ArticlePaginated {
-    items: Article[];
+    items: ArticleBrief[];
     total: number;
     page: number;
     page_size: number;
     pages: number;
 }
 
-// Project types
+// Project types — full detail response
 export interface Project {
     id: number;
     title: string;
@@ -67,7 +81,7 @@ export interface Project {
     category: string | null;
     status: 'draft' | 'published' | 'archived';
     featured: boolean;
-    display_order: number;
+    order: number;
     meta_title: string | null;
     meta_description: string | null;
     tags: Tag[];
@@ -75,8 +89,24 @@ export interface Project {
     updated_at: string;
 }
 
+// Project brief — used in list/paginated responses
+export interface ProjectBrief {
+    id: number;
+    title: string;
+    slug: string;
+    summary: string | null;
+    cover_image: string | null;
+    tech_tags: string[];
+    status: 'draft' | 'published' | 'archived';
+    featured: boolean;
+    category: string | null;
+    repo_url: string | null;
+    live_url: string | null;
+    tags: Tag[];
+}
+
 export interface ProjectPaginated {
-    items: Project[];
+    items: ProjectBrief[];
     total: number;
     page: number;
     page_size: number;
@@ -91,54 +121,65 @@ export interface ProfileLink {
     username: string | null;
     icon: string | null;
     description: string | null;
-    is_active: boolean;
-    display_order: number;
+    is_visible: boolean;
+    order: number;
 }
 
-// Education types
+// Education types — matches backend EducationResponse
 export interface Education {
     id: number;
     school: string;
-    school_url: string | null;
     program: string;
+    degree: string | null;
     department: string | null;
     location: string | null;
-    start_date: string;
+    start_date: string | null;
     end_date: string | null;
     is_current: boolean;
     description: string | null;
     achievements: string | null;
     gpa: string | null;
-    display_order: number;
+    order: number;
+    is_visible: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
-// Experience types
+// Experience types — matches backend ExperienceResponse
 export interface Experience {
     id: number;
+    role: string;
     organization: string;
     org_url: string | null;
-    role: string;
     location: string | null;
-    category: 'tech' | 'academia' | 'other';
-    start_date: string;
+    employment_type: string | null;
+    category: string | null;
+    start_date: string | null;
     end_date: string | null;
     is_current: boolean;
     description: string | null;
     bullets: string[];
     technologies: string[];
-    display_order: number;
+    order: number;
+    is_visible: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
-// Skill types
+// Skill types — matches backend SkillResponse
 export interface Skill {
     id: number;
     name: string;
     category: string;
-    level: 'beginner' | 'intermediate' | 'advanced' | 'expert' | null;
+    level: string | null;
     level_percent: number | null;
     icon: string | null;
+    years_experience: number | null;
     is_learning: boolean;
-    display_order: number;
+    order: number;
+    is_visible: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface SkillsGrouped {
@@ -157,7 +198,7 @@ export interface Publication {
     pdf_url: string | null;
     doi: string | null;
     publication_type: 'journal' | 'conference' | 'thesis' | 'preprint' | 'other' | null;
-    display_order: number;
+    order: number;
 }
 
 // Coursework types
@@ -179,7 +220,7 @@ export interface Coursework {
     syllabus_url: string | null;
     certificate_url: string | null;
     is_highlighted: boolean;
-    display_order: number;
+    order: number;
     is_active: boolean;
     created_at: string;
     updated_at: string;
