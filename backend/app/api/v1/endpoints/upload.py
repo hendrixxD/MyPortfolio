@@ -14,6 +14,25 @@ from app.core.config import settings
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
 
+def _build_image_list() -> dict:
+    upload_dir = settings.UPLOAD_DIR
+    if not os.path.exists(upload_dir):
+        return {"images": []}
+    images = []
+    for filename in os.listdir(upload_dir):
+        if filename.rsplit(".", 1)[-1].lower() in settings.ALLOWED_EXTENSIONS:
+            file_path = os.path.join(upload_dir, filename)
+            stat = os.stat(file_path)
+            images.append({
+                "filename": filename,
+                "url": f"/uploads/{filename}",
+                "size": stat.st_size,
+                "uploaded_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            })
+    images.sort(key=lambda x: x["uploaded_at"], reverse=True)
+    return {"images": images}
+
+
 def validate_file_extension(filename: str) -> str:
     """Validate and return file extension."""
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
@@ -86,6 +105,18 @@ async def upload_image(
         "url": f"/uploads/{filename}",
         "size": len(image_data)
     }
+
+
+@router.get("/images/public")
+def list_images_public():
+    """List all uploaded images (public, no auth required)."""
+    return _build_image_list()
+
+
+@router.get("/images")
+def list_images(admin: AdminUser):
+    """List all uploaded images. Admin only."""
+    return _build_image_list()
 
 
 @router.delete("/image/{filename}")

@@ -24,11 +24,15 @@ def seed_database():
         print("🌱 Starting database seeding...")
         
         # Create admin user
+        admin_password = os.environ.get("ADMIN_PASSWORD")
+        if not admin_password:
+            raise ValueError("ADMIN_PASSWORD env var must be set before running seed")
+
         existing_admin = db.query(User).filter(User.email == "lengedandungjoshua@gmail.com").first()
         if not existing_admin:
             admin = User(
                 email="lengedandungjoshua@gmail.com",
-                hashed_password=get_password_hash("changeme123"),
+                hashed_password=get_password_hash(admin_password),
                 full_name="lengedandungjoshua",
                 is_active=True,
                 is_superuser=True,
