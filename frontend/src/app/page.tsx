@@ -1,6 +1,14 @@
 import Link from 'next/link';
-import { Github, Linkedin, Twitter } from 'lucide-react';
-import { getFeaturedArticles, getFeaturedProjects, getProfileLinks } from '@/lib/api';
+import { Github, Linkedin, Twitter, Image as ImageIcon } from 'lucide-react';
+import {
+    getFeaturedArticles,
+    getRecentArticles,
+    getFeaturedProjects,
+    getRecentProjects,
+    getProfileLinks,
+    getRecentGalleryItems,
+    getRecentPublications
+} from '@/lib/api';
 import { formatDate, getReadingTime } from '@/lib/utils';
 import { TimeBasedGreeting } from '@/components/ui/TimeBasedGreeting';
 import { HomeBackground } from '@/components/backgrounds/AnimatedBackgrounds';
@@ -9,25 +17,46 @@ export const revalidate = 60;
 
 async function getHomeData() {
     try {
-        const [articlesRes, projectsRes, profileLinks] = await Promise.all([
+        const [featuredArticlesRes, recentArticlesRes, featuredProjectsRes, recentProjectsRes, profileLinks, galleryItems, publications] = await Promise.all([
             getFeaturedArticles().catch(() => ({ items: [] })),
+            getRecentArticles().catch(() => ({ items: [] })),
             getFeaturedProjects().catch(() => ({ items: [] })),
+            getRecentProjects().catch(() => ({ items: [] })),
             getProfileLinks().catch(() => []),
+            getRecentGalleryItems().catch(() => []),
+            getRecentPublications().catch(() => []),
         ]);
 
+        // Use featured if available, otherwise fall back to recent
+        const articles = (featuredArticlesRes.items?.length > 0 ? featuredArticlesRes.items : recentArticlesRes.items) || [];
+        const projects = (featuredProjectsRes.items?.length > 0 ? featuredProjectsRes.items : recentProjectsRes.items) || [];
+
         return {
-            articles: articlesRes.items || [],
-            projects: projectsRes.items || [],
+            articles,
+            projects,
+            isFeaturedArticles: featuredArticlesRes.items?.length > 0,
+            isFeaturedProjects: featuredProjectsRes.items?.length > 0,
             profileLinks: profileLinks || [],
+            galleryItems: galleryItems || [],
+            publications: publications || [],
         };
     } catch (error) {
         console.error('Error fetching home data:', error);
-        return { articles: [], projects: [], profileLinks: [] };
+        return {
+            articles: [],
+            projects: [],
+            isFeaturedArticles: false,
+            isFeaturedProjects: false,
+            profileLinks: [],
+            galleryItems: [],
+            publications: []
+        };
     }
 }
 
 export default async function HomePage() {
-    const { articles, projects } = await getHomeData();
+    const { articles, projects, isFeaturedArticles, isFeaturedProjects, galleryItems, publications } = await getHomeData();
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
     return (
         <div className="min-h-screen relative text-[#e2d9c8]">
@@ -134,11 +163,11 @@ export default async function HomePage() {
                     </div>
                 </section>
 
-                {/* ── 02 — Featured Work ── */}
+                {/* ── 02 — Featured/Recent Work ── */}
                 <section className="py-12 border-b border-[#1c1c1c]">
                     <div className="flex items-baseline justify-between mb-8">
                         <h2 className="font-mono text-xs tracking-[0.2em] text-[#c9a84c]">
-                            02 — FEATURED WORK
+                            02 — {isFeaturedProjects ? 'FEATURED' : 'RECENT'} WORK
                         </h2>
                         <Link href="/projects" className="font-mono text-xs text-[#555] hover:text-[#c9a84c] transition-colors">
                             ALL PROJECTS →
@@ -192,7 +221,7 @@ export default async function HomePage() {
                 <section className="py-12 border-b border-[#1c1c1c]">
                     <div className="flex items-baseline justify-between mb-8">
                         <h2 className="font-mono text-xs tracking-[0.2em] text-[#c9a84c]">
-                            03 — WRITING
+                            03 — {isFeaturedArticles ? 'FEATURED' : 'RECENT'} WRITING
                         </h2>
                         <Link href="/articles" className="font-mono text-xs text-[#555] hover:text-[#c9a84c] transition-colors">
                             ALL ARTICLES →
@@ -236,10 +265,97 @@ export default async function HomePage() {
                     )}
                 </section>
 
-                {/* ── 04 — Collaborate ── */}
+                {/* ── 04 — Gallery ── */}
+                {galleryItems.length > 0 && (
+                    <section className="py-12 border-b border-[#1c1c1c]">
+                        <div className="flex items-baseline justify-between mb-8">
+                            <h2 className="font-mono text-xs tracking-[0.2em] text-[#c9a84c]">
+                                04 — RECENT GALLERY
+                            </h2>
+                            <Link href="/gallery" className="font-mono text-xs text-[#555] hover:text-[#c9a84c] transition-colors">
+                                VIEW ALL →
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[#1c1c1c]">
+                            {galleryItems.map((item) => (
+                                <Link
+                                    key={item.id}
+                                    href="/gallery"
+                                    className="bg-[#080808] aspect-square overflow-hidden group relative"
+                                >
+                                    <img
+                                        src={`${API_URL}${item.url}`}
+                                        alt={item.caption || 'Gallery image'}
+                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                    />
+                                    {item.caption && (
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                                            <p className="font-mono text-[10px] text-[#e2d9c8] line-clamp-2">{item.caption}</p>
+                                        </div>
+                                    )}
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* ── 05 — Publications ── */}
+                {publications.length > 0 && (
+                    <section className="py-12 border-b border-[#1c1c1c]">
+                        <div className="flex items-baseline justify-between mb-8">
+                            <h2 className="font-mono text-xs tracking-[0.2em] text-[#c9a84c]">
+                                {galleryItems.length > 0 ? '05' : '04'} — RECENT PUBLICATIONS
+                            </h2>
+                            <Link href="/resume" className="font-mono text-xs text-[#555] hover:text-[#c9a84c] transition-colors">
+                                VIEW ALL →
+                            </Link>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-px bg-[#1c1c1c]">
+                            {publications.map((pub) => (
+                                <div
+                                    key={pub.id}
+                                    className="bg-[#080808] p-6 flex flex-col gap-3"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h3 className="font-semibold text-[#e2d9c8] line-clamp-2">
+                                            {pub.title}
+                                        </h3>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 text-xs text-[#555]">
+                                        {pub.authors && (
+                                            <span className="font-mono">{pub.authors}</span>
+                                        )}
+                                        {pub.published_date && (
+                                            <span className="font-mono text-[#444]">
+                                                · {formatDate(pub.published_date, 'year')}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {pub.venue && (
+                                        <p className="text-sm text-[#555] italic">{pub.venue}</p>
+                                    )}
+                                    {pub.url && (
+                                        <a
+                                            href={pub.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="font-mono text-xs text-[#c9a84c] hover:text-[#d4b56a] transition-colors"
+                                        >
+                                            READ PAPER →
+                                        </a>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* ── 06 — Collaborate ── */}
                 <section className="py-16">
                     <p className="font-mono text-xs tracking-[0.2em] text-[#c9a84c] mb-5">
-                        04 — COLLABORATE
+                        {galleryItems.length > 0 && publications.length > 0 ? '06' : galleryItems.length > 0 || publications.length > 0 ? '05' : '04'} — COLLABORATE
                     </p>
                     <h2 className="text-3xl md:text-4xl font-bold text-[#e2d9c8] mb-4">
                         Let&apos;s build something.

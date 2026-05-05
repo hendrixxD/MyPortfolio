@@ -21,7 +21,7 @@ interface FormState {
     live_url: string;
     tech_tags: string[];
     category: string;
-    status: string;
+    status: 'draft' | 'published' | 'archived';
     featured: boolean;
     order: number;
     meta_title: string;

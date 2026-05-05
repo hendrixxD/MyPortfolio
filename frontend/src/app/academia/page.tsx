@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CourseworkGrouped, Coursework } from '@/types';
 import { getEducation, getPublications, getExperiences, getCourseworkGrouped } from '@/lib/api';
 import { formatDateRange } from '@/lib/utils';
 import { ExternalLink, FileText, Award } from 'lucide-react';
@@ -34,7 +35,8 @@ export default async function AcademiaPage() {
     const courseworkCategories = Object.keys(courseworkGrouped);
 
     const totalCredits = courseworkCategories.reduce((sum, cat) => {
-        return sum + courseworkGrouped[cat].reduce((s: number, c: { credits?: number }) => s + (c.credits || 0), 0);
+        const courses = (courseworkGrouped as CourseworkGrouped)[cat] || [];
+        return sum + courses.reduce((s, c) => s + (c.credits || 0), 0);
     }, 0);
 
     return (
@@ -220,20 +222,7 @@ export default async function AcademiaPage() {
                                                 {category.toUpperCase()}
                                             </p>
                                             <div className="space-y-0">
-                                                {courseworkGrouped[category].map((course: {
-                                                    id: number;
-                                                    course_code?: string;
-                                                    course_name: string;
-                                                    semester?: string;
-                                                    year?: string;
-                                                    description?: string;
-                                                    credits?: number;
-                                                    grade?: string;
-                                                    instructor?: string;
-                                                    topics_covered?: string;
-                                                    syllabus_url?: string;
-                                                    certificate_url?: string;
-                                                }) => (
+                                                {((courseworkGrouped as CourseworkGrouped)[category] || []).map((course: Coursework) => (
                                                     <div
                                                         key={course.id}
                                                         className="py-5 border-b border-[#1c1c1c] last:border-b-0"

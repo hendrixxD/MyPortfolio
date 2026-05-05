@@ -259,3 +259,46 @@ export interface PaginatedResponse<T> {
     page_size: number;
     pages: number;
 }
+
+// Gallery types
+export interface GalleryTag {
+    id: number;
+    name: string;
+    slug: string;
+    color: string | null;
+    created_at: string;
+}
+
+export interface GalleryItem {
+    id: number;
+    filename: string;
+    url: string;
+    caption: string | null;
+    description: string | null;
+    alt_text: string | null;
+    size: number;
+    width: number | null;
+    height: number | null;
+    status: 'draft' | 'published';
+    is_featured: boolean;
+    order: number;
+    uploaded_at: string;
+    updated_at: string | null;
+    published_at: string | null;
+    tags: GalleryTag[];
+}
+
+export interface GalleryItemBrief {
+    id: number;
+    filename: string;
+    url: string;
+    caption: string | null;
+    size: number;
+    width: number | null;
+    height: number | null;
+    status: 'draft' | 'published';
+    is_featured: boolean;
+    uploaded_at: string;
+    published_at: string | null;
+    tags: GalleryTag[];
+}

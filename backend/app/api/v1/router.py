@@ -16,7 +16,8 @@ from app.api.v1.endpoints import (
     publications,
     contact,
     upload,
-    coursework
+    coursework,
+    gallery
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -35,4 +36,5 @@ api_router.include_router(publications.router)
 api_router.include_router(contact.router)
 api_router.include_router(upload.router)
 api_router.include_router(coursework.router)
+api_router.include_router(gallery.router)
 

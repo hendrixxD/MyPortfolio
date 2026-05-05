@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { SkillsGrouped } from '@/types';
 import Link from 'next/link';
 import { getEducation, getExperiences, getSkillsGrouped } from '@/lib/api';
 import { formatDateRange } from '@/lib/utils';
@@ -26,7 +27,7 @@ export default async function ResumePage() {
 
     const skillCategories = Object.keys(skillsGrouped);
     const totalSkills = skillCategories.reduce(
-        (sum, cat) => sum + (skillsGrouped[cat]?.length || 0),
+        (sum, cat) => sum + ((skillsGrouped as SkillsGrouped)[cat]?.length || 0),
         0,
     );
 
@@ -255,7 +256,7 @@ export default async function ResumePage() {
                                             {category.toUpperCase()}
                                         </p>
                                         <div className="flex flex-wrap gap-2">
-                                            {skillsGrouped[category].map((skill: { id: number; name: string }) => (
+                                            {((skillsGrouped as SkillsGrouped)[category] || []).map((skill: { id: number; name: string }) => (
                                                 <span
                                                     key={skill.id}
                                                     className="font-mono text-xs border border-[#2a2a2a] text-[#888] px-2.5 py-1 hover:border-[#c9a84c]/25 hover:text-[#e2d9c8] transition-colors"

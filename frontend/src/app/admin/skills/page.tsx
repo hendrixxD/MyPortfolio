@@ -45,7 +45,7 @@ export default function AdminSkillsPage() {
 
     const handleDelete = async (id: number) => { await deleteSkill(id); setConfirmDelete(null); load(); };
 
-    const categories = [...new Set(skills.map(s => s.category))].sort();
+    const categories = Array.from(new Set(skills.map(s => s.category))).sort();
 
     return (
         <div>

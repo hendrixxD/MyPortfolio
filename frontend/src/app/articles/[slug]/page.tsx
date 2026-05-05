@@ -213,7 +213,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                                             <pre {...props} className="bg-zinc-900 border border-zinc-800/80 rounded-xl p-5 overflow-x-auto my-8 shadow-lg" />
                                         ),
                                         // Custom inline code
-                                        code: ({ node, inline, ...props }) => (
+                                        code: ({ node, inline, ...props }: any) => (
                                             inline
                                                 ? <code {...props} className="bg-zinc-800/80 px-2 py-1 rounded-md text-sm text-amber-300/90 font-mono" />
                                                 : <code {...props} />
@@ -274,7 +274,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                                     </div>
                                     <ArticleEngagement
                                         title={article.title}
-                                        summary={article.summary}
+                                        summary={article.summary || undefined}
                                         articleId={article.id}
                                         initialLikes={0}
                                     />

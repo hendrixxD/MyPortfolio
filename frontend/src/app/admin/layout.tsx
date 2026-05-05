@@ -15,7 +15,7 @@ import {
     BookMarked,
     Link2,
     MessageSquare,
-    Images,
+    Image,
     LogOut,
     Menu,
     X,
@@ -37,7 +37,7 @@ const navigation = [
     { name: 'Skills', href: '/admin/skills', icon: Wrench },
     { name: 'Publications', href: '/admin/publications', icon: BookOpen },
     { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
-    { name: 'Gallery', href: '/admin/gallery', icon: Images },
+    { name: 'Gallery', href: '/admin/gallery', icon: Image },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

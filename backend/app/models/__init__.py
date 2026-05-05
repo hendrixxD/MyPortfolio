@@ -13,6 +13,7 @@ from app.models.skill import Skill
 from app.models.publication import Publication
 from app.models.contact import ContactMessage
 from app.models.coursework import Coursework
+from app.models.gallery import GalleryItem, GalleryTag, GalleryStatus, gallery_item_tags
 
 __all__ = [
     "Base",
@@ -33,5 +34,9 @@ __all__ = [
     "Publication",
     "ContactMessage",
     "Coursework",
+    "GalleryItem",
+    "GalleryTag",
+    "GalleryStatus",
+    "gallery_item_tags",
 ]
 
