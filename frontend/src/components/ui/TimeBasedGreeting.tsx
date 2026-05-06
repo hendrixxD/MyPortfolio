@@ -51,7 +51,7 @@ export function TimeBasedGreeting({ name, className = '' }: TimeBasedGreetingPro
     }
 
     return (
-        <span className={`${className} inline-flex items-center gap-2 flex-wrap justify-center`}>
+        <span className={`${className} inline-flex items-center gap-2`}>
             <span className="animate-bounce-subtle">{emoji}</span>
             <span>
                 {greeting}
