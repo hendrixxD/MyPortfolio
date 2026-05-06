@@ -63,7 +63,7 @@ export default async function HomePage() {
             <HomeBackground />
 
             {/* ── Hero ── */}
-            <section className="pt-24 pb-12 border-b border-[#1c1c1c]">
+            <section className="pt-8 pb-12 border-b border-[#1c1c1c]">
                 <div className="container-custom">
                     <div className="flex items-center gap-3 font-mono text-xs mb-6">
                         <span className="relative flex h-2 w-2">
