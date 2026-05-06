@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import SessionLocal
 from app.core.security import get_password_hash
+from app.core.config import settings
 from app.models import (
     User, Tag, Article, Project, ProfileLink,
     Education, Experience, Skill, Publication
@@ -23,26 +24,25 @@ def seed_database():
     try:
         print("🌱 Starting database seeding...")
         
-        # Create admin user
-        admin_password = os.environ.get("ADMIN_PASSWORD")
-        if not admin_password:
-            raise ValueError("ADMIN_PASSWORD env var must be set before running seed")
+        # Create admin user from environment variables
+        if not settings.ADMIN_EMAIL or not settings.ADMIN_PASSWORD:
+            raise ValueError("ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment")
 
-        existing_admin = db.query(User).filter(User.email == "lengedandungjoshua@gmail.com").first()
+        existing_admin = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
         if not existing_admin:
             admin = User(
-                email="lengedandungjoshua@gmail.com",
-                hashed_password=get_password_hash(admin_password),
-                full_name="lengedandungjoshua",
+                email=settings.ADMIN_EMAIL,
+                hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
+                full_name=settings.ADMIN_EMAIL.split("@")[0],
                 is_active=True,
                 is_superuser=True,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
             db.add(admin)
-            print("✅ Admin user created")
+            print(f"✅ Admin user created: {settings.ADMIN_EMAIL}")
         else:
-            print("⏭️ Admin user already exists")
+            print(f"⏭️ Admin user already exists: {settings.ADMIN_EMAIL}")
         
         # Create tags
         tags_data = [

@@ -21,6 +21,7 @@ import {
     X,
     ChevronLeft,
     ChevronRight,
+    BarChart3,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/api';
 import type { User } from '@/types';
@@ -38,6 +39,7 @@ const navigation = [
     { name: 'Publications', href: '/admin/publications', icon: BookOpen },
     { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
     { name: 'Gallery', href: '/admin/gallery', icon: Image },
+    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -120,13 +122,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className="lg:hidden p-1.5 text-[#444] hover:text-[#e2d9c8] transition-colors"
+                            className="lg:hidden p-1.5 text-[#444] hover:text-[#e2d9c8] hover:bg-[#1a1a1a] rounded
+                                transition-all duration-200 active:scale-90"
                         >
                             <X className="h-4 w-4" />
                         </button>
                         <button
                             onClick={toggleCollapsed}
-                            className="hidden lg:flex p-1.5 text-[#444] hover:text-[#e2d9c8] transition-colors"
+                            className="hidden lg:flex p-1.5 text-[#444] hover:text-[#e2d9c8] hover:bg-[#1a1a1a] rounded
+                                transition-all duration-200 hover:scale-110 active:scale-95"
                             title={collapsed ? 'Expand' : 'Collapse'}
                         >
                             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -144,14 +148,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 href={item.href}
                                 onClick={() => setMobileOpen(false)}
                                 title={collapsed ? item.name : undefined}
-                                className={`flex items-center gap-3 px-2 py-2 text-sm transition-colors
+                                className={`group relative flex items-center gap-3 px-2 py-2.5 text-sm rounded-md
+                                    transition-all duration-200 ease-in-out cursor-pointer
                                     ${active
-                                        ? 'text-[#c9a84c] bg-[#c9a84c]/5 border-l-2 border-[#c9a84c]'
-                                        : 'text-[#555] hover:bg-[#111] hover:text-[#e2d9c8] border-l-2 border-transparent'}
-                                    ${collapsed ? 'justify-center' : ''}`}
+                                        ? 'text-[#c9a84c] bg-[#c9a84c]/10 border-l-2 border-[#c9a84c] shadow-sm'
+                                        : 'text-[#555] hover:bg-[#1a1a1a] hover:text-[#e2d9c8] hover:border-l-2 hover:border-[#c9a84c]/30 border-l-2 border-transparent'}
+                                    ${collapsed ? 'justify-center' : ''}
+                                    hover:scale-[1.02] active:scale-[0.98]`}
                             >
-                                <item.icon className="h-4 w-4 flex-shrink-0" />
-                                {!collapsed && <span className="font-mono text-xs tracking-wide truncate">{item.name.toUpperCase()}</span>}
+                                <item.icon className={`h-4 w-4 flex-shrink-0 transition-transform duration-200
+                                    ${active ? '' : 'group-hover:scale-110 group-hover:rotate-3'}`}
+                                />
+                                {!collapsed && (
+                                    <span className="font-mono text-xs tracking-wide truncate">
+                                        {item.name.toUpperCase()}
+                                    </span>
+                                )}
+                                {/* Ripple effect indicator */}
+                                {!collapsed && (
+                                    <span className={`absolute right-2 w-1.5 h-1.5 rounded-full transition-all duration-300
+                                        ${active ? 'bg-[#c9a84c] opacity-100' : 'bg-transparent opacity-0 group-hover:bg-[#c9a84c]/50 group-hover:opacity-100'}`}
+                                    />
+                                )}
                             </Link>
                         );
                     })}
@@ -173,9 +191,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <button
                         onClick={handleLogout}
                         title={collapsed ? 'Sign Out' : undefined}
-                        className={`flex items-center gap-2 w-full px-2 py-2 font-mono text-xs text-red-400 hover:bg-red-900/10 transition-colors ${collapsed ? 'justify-center' : ''}`}
+                        className={`group flex items-center gap-2 w-full px-2 py-2 font-mono text-xs text-red-400
+                            hover:bg-red-900/20 hover:text-red-300 rounded-md
+                            transition-all duration-200 hover:scale-[1.02] active:scale-95
+                            ${collapsed ? 'justify-center' : ''}`}
                     >
-                        <LogOut className="h-4 w-4 flex-shrink-0" />
+                        <LogOut className="h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:-translate-x-0.5" />
                         {!collapsed && 'SIGN OUT'}
                     </button>
                 </div>
@@ -187,7 +208,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <header className="sticky top-0 z-30 bg-[#0a0a0a] border-b border-[#1c1c1c] h-14 flex items-center px-4 gap-4">
                     <button
                         onClick={() => setMobileOpen(true)}
-                        className="lg:hidden p-2 text-[#444] hover:text-[#e2d9c8] -ml-2 transition-colors"
+                        className="lg:hidden p-2 text-[#444] hover:text-[#e2d9c8] hover:bg-[#1a1a1a] rounded-md
+                            -ml-2 transition-all duration-200 hover:scale-110 active:scale-95"
                     >
                         <Menu className="h-5 w-5" />
                     </button>
@@ -196,7 +218,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-xs text-[#444] hover:text-[#c9a84c] transition-colors"
+                        className="font-mono text-xs text-[#444] hover:text-[#c9a84c] px-3 py-1.5 rounded-md
+                            hover:bg-[#1a1a1a] transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                         VIEW SITE →
                     </a>

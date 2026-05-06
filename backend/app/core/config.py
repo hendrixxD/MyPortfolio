@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     SITE_DESCRIPTION: str = "Data Engineer & Chemical/Petroleum Technology Portfolio"
     SITE_URL: str = "http://localhost:3000"
 
+    # Admin User (for seeding)
+    ADMIN_EMAIL: str
+    ADMIN_PASSWORD: str
+
     class Config:
         env_file = ".env"
         extra = "allow"

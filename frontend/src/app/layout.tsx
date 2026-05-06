@@ -4,6 +4,7 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ThemeProvider } from '@/context/ThemeProvider';
+import { PageTracker } from '@/components/PageTracker';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -89,6 +90,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
                 <ThemeProvider>
+                    <PageTracker />
                     <a href="#main-content" className="skip-link">
                         Skip to main content
                     </a>

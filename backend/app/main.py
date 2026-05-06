@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.core.exceptions import register_exception_handlers
 from app.api.v1.router import api_router
+from app.middleware.visitor_middleware import VisitorTrackingMiddleware
 
 logger = get_logger()
 
@@ -64,6 +65,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add visitor tracking middleware
+app.add_middleware(VisitorTrackingMiddleware)
 
 # Mount static files for uploads
 if os.path.exists(settings.UPLOAD_DIR):

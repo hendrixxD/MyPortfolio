@@ -14,6 +14,7 @@ from app.models.publication import Publication
 from app.models.contact import ContactMessage
 from app.models.coursework import Coursework
 from app.models.gallery import GalleryItem, GalleryTag, GalleryStatus, gallery_item_tags
+from app.models.visitor import VisitorLog
 
 __all__ = [
     "Base",
@@ -38,5 +39,6 @@ __all__ = [
     "GalleryTag",
     "GalleryStatus",
     "gallery_item_tags",
+    "VisitorLog",
 ]
 

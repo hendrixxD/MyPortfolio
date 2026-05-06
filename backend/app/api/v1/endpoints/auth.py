@@ -2,7 +2,7 @@
 Authentication endpoints.
 """
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -11,20 +11,26 @@ from app.core.security import create_access_token
 from app.schemas.auth import Token, LoginRequest, UserResponse
 from app.services.auth import authenticate_user
 from app.api.deps import CurrentUser
+from app.middleware.rate_limit import login_rate_limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/login", response_model=Token)
-def login(
+async def login(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
 ):
     """
     OAuth2 compatible token login.
-    
+
     Returns JWT access token for authenticated users.
+    Rate limited to prevent brute force attacks.
     """
+    # Check rate limit before authentication attempt
+    await login_rate_limiter.check_rate_limit(request)
+
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -44,15 +50,20 @@ def login(
 
 
 @router.post("/login/json", response_model=Token)
-def login_json(
+async def login_json(
+    request: Request,
     login_data: LoginRequest,
     db: Annotated[Session, Depends(get_db)]
 ):
     """
     JSON-based login endpoint.
-    
+
     Alternative to OAuth2 form-based login.
+    Rate limited to prevent brute force attacks.
     """
+    # Check rate limit before authentication attempt
+    await login_rate_limiter.check_rate_limit(request)
+
     user = authenticate_user(db, login_data.email, login_data.password)
     if not user:
         raise HTTPException(
