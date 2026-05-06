@@ -87,8 +87,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#080808]">
-                <p className="font-mono text-xs text-slate-400 dark:text-[#444]">// LOADING</p>
+            <div className="min-h-screen flex items-center justify-center bg-[#080808]">
+                <p className="font-mono text-xs text-[#444]">// LOADING</p>
             </div>
         );
     }
@@ -99,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const mainPl = collapsed ? 'lg:pl-16' : 'lg:pl-56';
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#080808]">
+        <div className="min-h-screen bg-[#080808]">
             {mobileOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-black/60 lg:hidden"
@@ -109,27 +109,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 ${sidebarW} bg-slate-50 dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-[#1c1c1c] flex flex-col transition-all duration-200
+                className={`fixed inset-y-0 left-0 z-50 ${sidebarW} bg-[#0a0a0a] border-r border-[#1c1c1c] flex flex-col transition-all duration-200
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
             >
                 {/* Header */}
-                <div className={`flex items-center border-b border-slate-200 dark:border-[#1c1c1c] h-14 px-3 ${collapsed ? 'justify-center' : 'justify-between'}`}>
+                <div className={`flex items-center border-b border-[#1c1c1c] h-14 px-3 ${collapsed ? 'justify-center' : 'justify-between'}`}>
                     {!collapsed && (
-                        <Link href="/admin" className="font-mono text-xs tracking-[0.2em] text-slate-900 dark:text-[#c9a84c] truncate">
+                        <Link href="/admin" className="font-mono text-xs tracking-[0.2em] text-[#c9a84c] truncate">
                             [ ADMIN ]
                         </Link>
                     )}
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className="lg:hidden p-1.5 text-slate-400 dark:text-[#444] hover:text-slate-900 dark:hover:text-[#e2d9c8] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] rounded
+                            className="lg:hidden p-1.5 text-[#444] hover:text-[#e2d9c8] hover:bg-[#1a1a1a] rounded
                                 transition-all duration-200 active:scale-90"
                         >
                             <X className="h-4 w-4" />
                         </button>
                         <button
                             onClick={toggleCollapsed}
-                            className="hidden lg:flex p-1.5 text-slate-400 dark:text-[#444] hover:text-slate-900 dark:hover:text-[#e2d9c8] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] rounded
+                            className="hidden lg:flex p-1.5 text-[#444] hover:text-[#e2d9c8] hover:bg-[#1a1a1a] rounded
                                 transition-all duration-200 hover:scale-110 active:scale-95"
                             title={collapsed ? 'Expand' : 'Collapse'}
                         >
@@ -151,8 +151,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 className={`group relative flex items-center gap-3 px-2 py-2.5 text-sm rounded-md
                                     transition-all duration-200 ease-in-out cursor-pointer
                                     ${active
-                                        ? 'text-slate-900 dark:text-[#c9a84c] bg-slate-200 dark:bg-[#c9a84c]/10 border-l-2 border-slate-900 dark:border-[#c9a84c] shadow-sm'
-                                        : 'text-slate-600 dark:text-[#555] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] hover:text-slate-900 dark:hover:text-[#e2d9c8] hover:border-l-2 hover:border-slate-400 dark:hover:border-[#c9a84c]/30 border-l-2 border-transparent'}
+                                        ? 'text-[#c9a84c] bg-[#c9a84c]/10 border-l-2 border-[#c9a84c] shadow-sm'
+                                        : 'text-[#555] hover:bg-[#1a1a1a] hover:text-[#e2d9c8] hover:border-l-2 hover:border-[#c9a84c]/30 border-l-2 border-transparent'}
                                     ${collapsed ? 'justify-center' : ''}
                                     hover:scale-[1.02] active:scale-[0.98]`}
                             >
@@ -167,7 +167,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 {/* Ripple effect indicator */}
                                 {!collapsed && (
                                     <span className={`absolute right-2 w-1.5 h-1.5 rounded-full transition-all duration-300
-                                        ${active ? 'bg-slate-900 dark:bg-[#c9a84c] opacity-100' : 'bg-transparent opacity-0 group-hover:bg-slate-600 dark:group-hover:bg-[#c9a84c]/50 group-hover:opacity-100'}`}
+                                        ${active ? 'bg-[#c9a84c] opacity-100' : 'bg-transparent opacity-0 group-hover:bg-[#c9a84c]/50 group-hover:opacity-100'}`}
                                     />
                                 )}
                             </Link>
@@ -176,23 +176,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </nav>
 
                 {/* Footer */}
-                <div className="p-2 border-t border-slate-200 dark:border-[#1c1c1c]">
+                <div className="p-2 border-t border-[#1c1c1c]">
                     {!collapsed && (
                         <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                            <div className="w-6 h-6 bg-slate-200 dark:bg-[#c9a84c]/10 border border-slate-300 dark:border-[#c9a84c]/20 flex items-center justify-center text-slate-900 dark:text-[#c9a84c] font-mono text-xs flex-shrink-0">
+                            <div className="w-6 h-6 bg-[#c9a84c]/10 border border-[#c9a84c]/20 flex items-center justify-center text-[#c9a84c] font-mono text-xs flex-shrink-0">
                                 {(user.full_name?.[0] || user.email[0]).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                                <p className="font-mono text-[10px] text-slate-900 dark:text-[#e2d9c8] truncate">{user.full_name || 'Admin'}</p>
-                                <p className="font-mono text-[10px] text-slate-400 dark:text-[#444] truncate">{user.email}</p>
+                                <p className="font-mono text-[10px] text-[#e2d9c8] truncate">{user.full_name || 'Admin'}</p>
+                                <p className="font-mono text-[10px] text-[#444] truncate">{user.email}</p>
                             </div>
                         </div>
                     )}
                     <button
                         onClick={handleLogout}
                         title={collapsed ? 'Sign Out' : undefined}
-                        className={`group flex items-center gap-2 w-full px-2 py-2 font-mono text-xs text-red-600 dark:text-red-400
-                            hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 rounded-md
+                        className={`group flex items-center gap-2 w-full px-2 py-2 font-mono text-xs text-red-400
+                            hover:bg-red-900/20 hover:text-red-300 rounded-md
                             transition-all duration-200 hover:scale-[1.02] active:scale-95
                             ${collapsed ? 'justify-center' : ''}`}
                     >
@@ -205,10 +205,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main */}
             <div className={`transition-all duration-200 ${mainPl}`}>
                 {/* Top bar */}
-                <header className="sticky top-0 z-30 bg-slate-50 dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-[#1c1c1c] h-14 flex items-center px-4 gap-4">
+                <header className="sticky top-0 z-30 bg-[#0a0a0a] border-b border-[#1c1c1c] h-14 flex items-center px-4 gap-4">
                     <button
                         onClick={() => setMobileOpen(true)}
-                        className="lg:hidden p-2 text-slate-400 dark:text-[#444] hover:text-slate-900 dark:hover:text-[#e2d9c8] hover:bg-slate-100 dark:hover:bg-[#1a1a1a] rounded-md
+                        className="lg:hidden p-2 text-[#444] hover:text-[#e2d9c8] hover:bg-[#1a1a1a] rounded-md
                             -ml-2 transition-all duration-200 hover:scale-110 active:scale-95"
                     >
                         <Menu className="h-5 w-5" />
@@ -218,8 +218,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-xs text-slate-600 dark:text-[#444] hover:text-slate-900 dark:hover:text-[#c9a84c] px-3 py-1.5 rounded-md
-                            hover:bg-slate-100 dark:hover:bg-[#1a1a1a] transition-all duration-200 hover:scale-105 active:scale-95"
+                        className="font-mono text-xs text-[#444] hover:text-[#c9a84c] px-3 py-1.5 rounded-md
+                            hover:bg-[#1a1a1a] transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                         VIEW SITE →
                     </a>

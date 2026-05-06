@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  devIndicators: false,
   images: {
     domains: ['localhost'],
     remotePatterns: [
