@@ -109,6 +109,7 @@ def get_article_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Article not found"
         )
+    # Note: Articles don't have user ownership - only admins can access this endpoint
     return article
 
 
@@ -130,12 +131,15 @@ def update_article(
     admin: AdminUser
 ):
     """Update an article (admin only)."""
-    article = article_service.update_article(db, article_id, article_data)
+    # Verify article exists first
+    article = article_service.get_article_by_id(db, article_id)
     if not article:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Article not found"
         )
+    # Note: Articles don't have user ownership - only admins can update
+    article = article_service.update_article(db, article_id, article_data)
     return article
 
 
@@ -184,8 +188,12 @@ def delete_article(
     admin: AdminUser
 ):
     """Delete an article (admin only)."""
-    if not article_service.delete_article(db, article_id):
+    # Verify article exists first
+    article = article_service.get_article_by_id(db, article_id)
+    if not article:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Article not found"
         )
+    # Note: Articles don't have user ownership - only admins can delete
+    article_service.delete_article(db, article_id)

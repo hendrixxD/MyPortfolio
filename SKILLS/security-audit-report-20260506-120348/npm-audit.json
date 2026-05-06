@@ -1,0 +1,40 @@
+npm notice This endpoint is being retired. Use the bulk advisory endpoint instead. See the following docs for more info: https://api-docs.npmjs.com/#tag/Audit
+npm WARN audit 400 Bad Request - POST https://registry.npmjs.org/-/npm/v1/security/audits/quick - Bad Request
+{
+  "message": "400 Bad Request - POST https://registry.npmjs.org/-/npm/v1/security/audits/quick - Bad Request",
+  "method": "POST",
+  "uri": "https://registry.npmjs.org/-/npm/v1/security/audits/quick",
+  "headers": {
+    "date": [
+      "Wed, 06 May 2026 11:04:25 GMT"
+    ],
+    "transfer-encoding": [
+      "chunked"
+    ],
+    "connection": [
+      "keep-alive"
+    ],
+    "cf-ray": [
+      "9f7781040adb0a6d-AMS"
+    ],
+    "cf-cache-status": [
+      "DYNAMIC"
+    ],
+    "server": [
+      "cloudflare"
+    ],
+    "npm-notice": [
+      "This endpoint is being retired. Use the bulk advisory endpoint instead. See the following docs for more info: https://api-docs.npmjs.com/#tag/Audit"
+    ],
+    "x-fetch-attempts": [
+      "1"
+    ]
+  },
+  "statusCode": 400,
+  "body": {
+    "statusCode": 400,
+    "error": "Bad Request",
+    "message": "Invalid package tree, run  npm install  to rebuild your package-lock.json"
+  }
+}
+npm ERR! audit endpoint returned an error

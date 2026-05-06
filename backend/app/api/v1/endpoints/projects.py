@@ -109,6 +109,7 @@ def get_project_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
+    # Note: Projects don't have user ownership - only admins can access this endpoint
     return project
 
 
@@ -130,12 +131,15 @@ def update_project(
     admin: AdminUser
 ):
     """Update a project (admin only)."""
-    project = project_service.update_project(db, project_id, project_data)
+    # Verify project exists first
+    project = project_service.get_project_by_id(db, project_id)
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
+    # Note: Projects don't have user ownership - only admins can update
+    project = project_service.update_project(db, project_id, project_data)
     return project
 
 
@@ -165,8 +169,12 @@ def delete_project(
     admin: AdminUser
 ):
     """Delete a project (admin only)."""
-    if not project_service.delete_project(db, project_id):
+    # Verify project exists first
+    project = project_service.get_project_by_id(db, project_id)
+    if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
+    # Note: Projects don't have user ownership - only admins can delete
+    project_service.delete_project(db, project_id)

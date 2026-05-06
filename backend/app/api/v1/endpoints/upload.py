@@ -10,6 +10,7 @@ from PIL import Image
 
 from app.api.deps import AdminUser
 from app.core.config import settings
+from app.core.file_validation import validate_image_content
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
@@ -74,11 +75,17 @@ async def upload_image(
     # Validate extension
     if file.filename:
         validate_file_extension(file.filename)
-    
-    # Validate it's actually an image
+
+    # Read file data once
+    await file.seek(0)
+    image_data = await file.read()
+
+    # Validate file content matches extension (magic byte validation)
+    if file.filename:
+        validate_image_content(image_data, file.filename)
+
+    # Validate it's actually an image using PIL
     try:
-        await file.seek(0)
-        image_data = await file.read()
         img = Image.open(__import__("io").BytesIO(image_data))
         img.verify()
     except Exception:

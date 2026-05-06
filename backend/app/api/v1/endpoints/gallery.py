@@ -14,6 +14,7 @@ from slugify import slugify
 
 from app.api.deps import get_db, AdminUser
 from app.core.config import settings
+from app.core.file_validation import validate_image_content
 from app.models.gallery import GalleryItem, GalleryTag, GalleryStatus
 from app.schemas.gallery import (
     GalleryItem as GalleryItemSchema,
@@ -213,6 +214,10 @@ async def upload_gallery_image(
     if file.filename:
         validate_file_extension(file.filename)
 
+    # Validate file content matches extension (magic byte validation)
+    if file.filename:
+        validate_image_content(contents, file.filename)
+
     # Validate it's actually an image and get dimensions
     width, height = None, None
     try:
@@ -273,6 +278,8 @@ def update_gallery_item(
     db_item = db.query(GalleryItem).filter(GalleryItem.id == item_id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Gallery item not found")
+
+    # Note: Gallery items don't have user ownership - only admins can update
 
     if data.caption is not None:
         db_item.caption = data.caption
@@ -348,6 +355,8 @@ def delete_gallery_item(
     db_item = db.query(GalleryItem).filter(GalleryItem.id == item_id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Gallery item not found")
+
+    # Note: Gallery items don't have user ownership - only admins can delete
 
     # Delete file from disk
     upload_dir = os.path.realpath(settings.UPLOAD_DIR)

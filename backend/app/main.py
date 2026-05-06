@@ -15,6 +15,7 @@ from app.core.logging import get_logger
 from app.core.exceptions import register_exception_handlers
 from app.api.v1.router import api_router
 from app.middleware.visitor_middleware import VisitorTrackingMiddleware
+from app.middleware.security_headers import SecurityHeadersMiddleware
 
 logger = get_logger()
 
@@ -56,6 +57,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Register custom exception handlers for consistent error responses
 register_exception_handlers(app)
+
+# Add security headers middleware (first, so it applies to all responses)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Configure CORS
 app.add_middleware(

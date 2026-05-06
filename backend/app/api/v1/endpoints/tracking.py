@@ -1,7 +1,8 @@
 """
 Client-side tracking endpoint.
 """
-from fastapi import APIRouter, Request, Response
+import re
+from fastapi import APIRouter, Request, Response, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
@@ -9,6 +10,32 @@ from app.core.database import get_db
 from app.services.visitor_tracking import visitor_tracking_service
 
 router = APIRouter(prefix="/tracking", tags=["Tracking"])
+
+
+def validate_page_path(page: str) -> str:
+    """
+    Validate and sanitize page path to prevent SQL injection.
+
+    Only allows alphanumeric, hyphens, underscores, forward slashes, and query strings.
+    """
+    if not page:
+        return "/"
+
+    # Limit length
+    if len(page) > 500:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page path too long"
+        )
+
+    # Allow valid URL path characters
+    if not re.match(r'^/[\w\-/?.=&%]*$', page):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid page path format"
+        )
+
+    return page
 
 
 @router.post("/pageview")
@@ -23,13 +50,14 @@ async def track_pageview(request: Request, page: str = "/", db: Session = Depend
     - page: The actual page path being viewed (e.g., "/articles", "/projects")
     """
     try:
-        # Override the request path with the actual page being viewed
-        # Store original path
-        original_path = str(request.url.path)
+        # Validate and sanitize the page parameter
+        validated_page = validate_page_path(page)
 
         # Create a modified request state for tracking the actual page
-        await visitor_tracking_service.track_visitor_with_path(request, page, db)
+        await visitor_tracking_service.track_visitor_with_path(request, validated_page, db)
         return {"status": "tracked"}
+    except HTTPException:
+        raise
     except Exception as e:
         # Don't fail if tracking fails
         return {"status": "error", "message": str(e)}

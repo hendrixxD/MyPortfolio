@@ -25,6 +25,7 @@ Pillow==10.2.0
 
 # Rate Limiting
 slowapi==0.1.9
+redis==5.0.1
 
 # Logging
 loguru==0.7.2

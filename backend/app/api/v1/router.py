@@ -19,7 +19,8 @@ from app.api.v1.endpoints import (
     coursework,
     gallery,
     analytics,
-    tracking
+    tracking,
+    csrf
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -41,4 +42,5 @@ api_router.include_router(coursework.router)
 api_router.include_router(gallery.router)
 api_router.include_router(analytics.router)
 api_router.include_router(tracking.router)
+api_router.include_router(csrf.router)
 
