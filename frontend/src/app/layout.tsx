@@ -74,11 +74,8 @@ export const metadata: Metadata = {
         },
     },
     icons: {
-        icon: '/favicon.ico',
-        shortcut: '/favicon-16x16.png',
-        apple: '/apple-touch-icon.png',
+        icon: 'data:,',
     },
-    manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -88,6 +85,9 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" suppressHydrationWarning>
+            <head>
+                <link rel="icon" href="data:," />
+            </head>
             <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
                 <ThemeProvider>
                     <PageTracker />

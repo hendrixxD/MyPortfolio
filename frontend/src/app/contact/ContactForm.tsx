@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { submitContactForm } from '@/lib/api';
+import { sanitizeText, sanitizeEmail } from '@/lib/sanitize';
 
 export function ContactForm() {
     const [formData, setFormData] = useState({
@@ -19,8 +20,23 @@ export function ContactForm() {
         setStatus('loading');
         setErrorMessage('');
 
+        // Sanitize inputs before submission
+        const sanitizedData = {
+            name: sanitizeText(formData.name),
+            email: sanitizeEmail(formData.email),
+            subject: sanitizeText(formData.subject),
+            message: sanitizeText(formData.message),
+        };
+
+        // Validate sanitized data
+        if (!sanitizedData.name || !sanitizedData.email || !sanitizedData.message) {
+            setStatus('error');
+            setErrorMessage('Please fill in all required fields with valid data.');
+            return;
+        }
+
         try {
-            await submitContactForm(formData);
+            await submitContactForm(sanitizedData);
             setStatus('success');
             setFormData({ name: '', email: '', subject: '', message: '' });
         } catch (error) {

@@ -2,7 +2,7 @@
 Authentication endpoints.
 """
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -23,6 +23,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/login", response_model=Token)
 async def login(
     request: Request,
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
 ):
@@ -30,6 +31,7 @@ async def login(
     OAuth2 compatible token login.
 
     Returns JWT access token for authenticated users.
+    Sets httpOnly cookie for secure token storage.
     Rate limited and protected with account lockout to prevent brute force attacks.
     """
     # Check rate limit before authentication attempt
@@ -70,12 +72,25 @@ async def login(
     lockout_manager.record_successful_login(form_data.username)
 
     access_token = create_access_token(subject=user.email)
+
+    # Set httpOnly cookie for secure token storage
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True,  # Only send over HTTPS
+        samesite="lax",  # CSRF protection
+        max_age=1800,  # 30 minutes (matches token expiry)
+        path="/",
+    )
+
     return Token(access_token=access_token, token_type="bearer")
 
 
 @router.post("/login/json", response_model=Token)
 async def login_json(
     request: Request,
+    response: Response,
     login_data: LoginRequest,
     db: Annotated[Session, Depends(get_db)]
 ):
@@ -83,6 +98,7 @@ async def login_json(
     JSON-based login endpoint.
 
     Alternative to OAuth2 form-based login.
+    Sets httpOnly cookie for secure token storage.
     Rate limited and protected with account lockout to prevent brute force attacks.
     """
     # Check rate limit before authentication attempt
@@ -123,6 +139,18 @@ async def login_json(
     lockout_manager.record_successful_login(login_data.email)
 
     access_token = create_access_token(subject=user.email)
+
+    # Set httpOnly cookie for secure token storage
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True,  # Only send over HTTPS
+        samesite="lax",  # CSRF protection
+        max_age=1800,  # 30 minutes (matches token expiry)
+        path="/",
+    )
+
     return Token(access_token=access_token, token_type="bearer")
 
 
@@ -133,11 +161,17 @@ def get_current_user_info(current_user: CurrentUser):
 
 
 @router.post("/logout")
-def logout():
+def logout(response: Response):
     """
     Logout endpoint.
-    
-    Note: With JWT tokens, logout is typically handled client-side
-    by removing the token. This endpoint is provided for completeness.
+
+    Clears the httpOnly auth cookie to log out the user.
     """
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
     return {"message": "Successfully logged out"}
