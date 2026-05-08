@@ -9,7 +9,6 @@ const nextConfig = {
     buildActivityPosition: 'bottom-right',
   },
   images: {
-    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'http',
@@ -27,6 +26,9 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 2592000, // 30 days
+  },
+  experimental: {
+    instrumentationHook: true,
   },
   async headers() {
     return [
@@ -76,28 +78,25 @@ const nextConfig = {
 };
 
 // Sentry configuration options
-const sentryWebpackPluginOptions = {
-  // Suppresses source map uploading logs during build
-  silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-};
-
 const sentryOptions = {
   // Automatically tree-shake Sentry logger statements to reduce bundle size
-  hideSourceMaps: true,
+  silent: true,
 
   // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers
   tunnelRoute: "/monitoring",
 
   // Hides source maps from generated client bundles
-  widenClientFileUpload: true,
+  hideSourceMaps: true,
 
-  // Transpiles SDK to be compatible with IE11
-  transpileClientSDK: true,
+  // Automatically instruments Next.js data fetching methods and API routes
+  autoInstrumentServerFunctions: true,
+  autoInstrumentMiddleware: true,
 
-  // Automatically instrument Vercel Cron Monitors
-  automaticVercelMonitors: true,
+  // Disables automatic instrumentation of Vercel Cron Monitors
+  automaticVercelMonitors: false,
 };
 
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions, sentryOptions);
+// Only wrap with Sentry if DSN is configured
+module.exports = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, sentryOptions)
+  : nextConfig;
