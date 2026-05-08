@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Github, Linkedin, Twitter, Image as ImageIcon } from 'lucide-react';
 import {
     getFeaturedArticles,
@@ -284,10 +285,13 @@ export default async function HomePage() {
                                     href="/gallery"
                                     className="bg-[#080808] aspect-square overflow-hidden group relative"
                                 >
-                                    <img
+                                    <Image
                                         src={`${API_URL}${item.url}`}
                                         alt={item.caption || 'Gallery image'}
-                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        fill
+                                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                                        className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        priority
                                     />
                                     {item.caption && (
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">

@@ -1,3 +1,5 @@
+const { withSentryConfig } = require("@sentry/nextjs");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -15,7 +17,16 @@ const nextConfig = {
         port: '8000',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: '*.com',
+        pathname: '/uploads/**',
+      },
     ],
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 2592000, // 30 days
   },
   async headers() {
     return [
@@ -64,4 +75,29 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+// Sentry configuration options
+const sentryWebpackPluginOptions = {
+  // Suppresses source map uploading logs during build
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+};
+
+const sentryOptions = {
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  hideSourceMaps: true,
+
+  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers
+  tunnelRoute: "/monitoring",
+
+  // Hides source maps from generated client bundles
+  widenClientFileUpload: true,
+
+  // Transpiles SDK to be compatible with IE11
+  transpileClientSDK: true,
+
+  // Automatically instrument Vercel Cron Monitors
+  automaticVercelMonitors: true,
+};
+
+module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions, sentryOptions);

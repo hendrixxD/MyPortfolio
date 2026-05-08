@@ -12,6 +12,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.core.sentry import init_sentry
 from app.core.exceptions import register_exception_handlers
 from app.api.v1.router import api_router
 from app.middleware.visitor_middleware import VisitorTrackingMiddleware
@@ -27,6 +28,7 @@ limiter = Limiter(key_func=get_remote_address)
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
+    init_sentry()  # Initialize Sentry for error tracking
     logger.info("Starting up Portfolio API...")
     
     # Create logs directory

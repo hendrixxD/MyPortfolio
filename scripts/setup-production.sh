@@ -27,7 +27,7 @@ check_placeholders() {
 
     if grep -q "CHANGE_ME" .env.production; then
         echo -e "${RED}✗ Found CHANGE_ME placeholders in .env.production${NC}"
-        grep "CHANGE_ME" .env.production
+        grep "CHANGE_ME" .env.production | head -10
         placeholders_found=1
     else
         echo -e "${GREEN}✓ No CHANGE_ME placeholders found${NC}"
@@ -88,12 +88,25 @@ setup_env() {
         echo -e "${GREEN}✓ Updated nginx configuration with domain${NC}"
     fi
 
+    # Prompt for Sentry DSN (optional)
+    echo -e "\n${YELLOW}Optional: Sentry Error Tracking${NC}"
+    read -p "Enter Sentry DSN (leave empty to skip): " SENTRY_DSN
+
+    if [ -n "$SENTRY_DSN" ]; then
+        sed -i "s|SENTRY_DSN=CHANGE_ME_SENTRY_DSN|SENTRY_DSN=$SENTRY_DSN|g" .env.production
+        sed -i "s|NEXT_PUBLIC_SENTRY_DSN=CHANGE_ME_SENTRY_DSN|NEXT_PUBLIC_SENTRY_DSN=$SENTRY_DSN|g" .env.production
+        echo -e "${GREEN}✓ Configured Sentry DSN${NC}"
+    else
+        echo -e "${YELLOW}⊘ Skipping Sentry configuration (can be added later)${NC}"
+    fi
+
     echo -e "\n${GREEN}=== Setup Complete ===${NC}"
     echo -e "Your production environment is configured for: ${BLUE}$domain${NC}"
     echo -e "\n${YELLOW}Next steps:${NC}"
     echo -e "1. Review .env.production to ensure all values are correct"
-    echo -e "2. Run SSL initialization: ./scripts/init-ssl.sh $domain your@email.com"
-    echo -e "3. Deploy: docker-compose -f docker-compose.prod.yml up -d"
+    echo -e "2. Setup Sentry at https://sentry.io if not configured"
+    echo -e "3. Run SSL initialization: ./scripts/init-ssl.sh $domain your@email.com"
+    echo -e "4. Deploy: docker-compose -f docker-compose.prod.yml up -d"
 }
 
 # Main menu
