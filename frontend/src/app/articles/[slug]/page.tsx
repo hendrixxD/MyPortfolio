@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Calendar, Clock, Eye, ChevronRight, User, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -168,10 +169,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                             {/* Cover Image with thumbnail preview - Back inside container */}
                             {article.cover_image && (
                                 <div className="aspect-video rounded-xl overflow-hidden mb-10 bg-zinc-800 relative group shadow-2xl shadow-black/30">
-                                    <img
+                                    <Image
                                         src={article.cover_image}
                                         alt={article.title}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 800px"
+                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        priority
                                     />
                                     {/* Gradient overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

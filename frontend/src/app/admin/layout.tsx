@@ -64,14 +64,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         const checkAuth = async () => {
-            const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-            if (!token) { router.push('/admin-login'); return; }
             try {
-                const userData = await getCurrentUser(token);
+                // Auth cookie is sent automatically with credentials: 'include'
+                const userData = await getCurrentUser();
                 if (!userData.is_superuser) throw new Error('Not authorized');
                 setUser(userData);
             } catch {
-                localStorage.removeItem('auth_token');
+                // Not authenticated or not authorized
                 router.push('/admin-login');
             } finally {
                 setLoading(false);
@@ -80,8 +79,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         checkAuth();
     }, [router]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('auth_token');
+    const handleLogout = async () => {
+        try {
+            // Call backend logout to clear httpOnly cookie
+            await fetch('/api/v1/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch {
+            // Ignore errors, redirect anyway
+        }
         router.push('/admin-login');
     };
 
