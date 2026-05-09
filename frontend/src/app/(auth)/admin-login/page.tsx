@@ -14,8 +14,20 @@ export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        if (token) router.push('/admin');
+        // Check if already authenticated by trying to access /api/v1/auth/me
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('/api/v1/auth/me', {
+                    credentials: 'include', // Include cookies
+                });
+                if (response.ok) {
+                    router.push('/admin');
+                }
+            } catch {
+                // Not authenticated, stay on login page
+            }
+        };
+        checkAuth();
     }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -23,8 +35,8 @@ export default function AdminLoginPage() {
         setError('');
         setLoading(true);
         try {
-            const response = await login({ email, password });
-            if (typeof window !== 'undefined') localStorage.setItem('auth_token', response.access_token);
+            await login({ email, password });
+            // Cookie is set automatically by backend, no localStorage needed
             router.push('/admin');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Login failed. Please try again.');

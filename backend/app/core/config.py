@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str
     ADMIN_PASSWORD: str
 
+    # Sentry Configuration
+    SENTRY_DSN: str = ""
+    SENTRY_ENVIRONMENT: str = "production"
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 10% of requests for APM
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1
+
     class Config:
         env_file = ".env"
         extra = "allow"

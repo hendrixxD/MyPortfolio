@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn, Camera, Grid3X3, LayoutGrid, Tag as TagIcon, Loader2 } from 'lucide-react';
 import { GalleryBackground } from '@/components/backgrounds/AnimatedBackgrounds';
 import { getGalleryItems, getGalleryTags, getGalleryItem } from '@/lib/api';
@@ -169,15 +170,24 @@ export default function GalleryPage() {
                             {items.map((image, index) => (
                                 <div
                                     key={image.id}
-                                    className={`group relative overflow-hidden bg-[#0f0f0f] border border-[#1c1c1c] cursor-pointer hover:border-[#333] transition-colors ${viewMode === 'masonry' ? 'break-inside-avoid' : ''}`}
+                                    className={`group relative overflow-hidden bg-[#0f0f0f] border border-[#1c1c1c] cursor-pointer hover:border-[#333] transition-colors ${viewMode === 'masonry' ? 'break-inside-avoid' : viewMode === 'grid' ? 'aspect-square' : ''}`}
                                     onClick={() => openLightbox(index)}
                                 >
-                                    <img
-                                        src={`${API_URL}${image.url}`}
-                                        alt={image.caption || image.filename}
-                                        className={`w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity ${viewMode === 'grid' ? 'aspect-square' : ''}`}
-                                        style={viewMode === 'masonry' ? { display: 'block' } : undefined}
-                                    />
+                                    {viewMode === 'grid' ? (
+                                        <Image
+                                            src={`${API_URL}${image.url}`}
+                                            alt={image.caption || image.filename}
+                                            fill
+                                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                            className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={`${API_URL}${image.url}`}
+                                            alt={image.caption || image.filename}
+                                            className="w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity block"
+                                        />
+                                    )}
 
                                     {/* Hover overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">

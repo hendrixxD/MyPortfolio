@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ExternalLink, Github } from 'lucide-react';
 import { getProjects, getProjectCategories } from '@/lib/api';
 import { ProjectsBackground } from '@/components/backgrounds/AnimatedBackgrounds';
@@ -112,10 +113,12 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
                                     {/* Cover / art cell */}
                                     <div className="aspect-video bg-[#0f0f0f] overflow-hidden relative border-b border-[#1c1c1c]">
                                         {project.cover_image ? (
-                                            <img
+                                            <Image
                                                 src={project.cover_image}
                                                 alt={project.title}
-                                                className="w-full h-full object-cover opacity-80"
+                                                fill
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                className="object-cover opacity-80"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">

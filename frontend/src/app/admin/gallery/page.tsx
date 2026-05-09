@@ -14,6 +14,7 @@ import {
     updateGalleryTag,
     deleteGalleryTag,
 } from '@/lib/api';
+import { validateImageFile, validateFileName } from '@/lib/fileValidation';
 import type { GalleryItemBrief, GalleryTag } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -83,6 +84,25 @@ export default function AdminGalleryPage() {
 
         for (let i = 0; i < fileArray.length; i++) {
             const file = fileArray[i];
+
+            // Validate file name
+            const nameValidation = validateFileName(file.name);
+            if (!nameValidation.valid) {
+                setUploadProgress(prev => prev.map((item, idx) =>
+                    idx === i ? { ...item, status: 'error', message: nameValidation.error } : item
+                ));
+                continue;
+            }
+
+            // Validate file content
+            const fileValidation = validateImageFile(file);
+            if (!fileValidation.valid) {
+                setUploadProgress(prev => prev.map((item, idx) =>
+                    idx === i ? { ...item, status: 'error', message: fileValidation.error } : item
+                ));
+                continue;
+            }
+
             try {
                 await uploadGalleryImage(file);
                 setUploadProgress(prev => prev.map((item, idx) =>

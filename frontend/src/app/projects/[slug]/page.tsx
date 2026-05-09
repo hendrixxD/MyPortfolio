@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Github, ExternalLink, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -163,11 +164,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                     {/* Cover Image */}
                     {project.cover_image && (
-                        <div className="aspect-video rounded-xl overflow-hidden mb-8 bg-slate-100 dark:bg-slate-800">
-                            <img
+                        <div className="aspect-video rounded-xl overflow-hidden mb-8 bg-slate-100 dark:bg-slate-800 relative">
+                            <Image
                                 src={project.cover_image}
                                 alt={project.title}
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 800px"
+                                className="object-cover"
+                                priority
                             />
                         </div>
                     )}
@@ -178,12 +182,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             {project.screenshots.map((screenshot, index) => (
                                 <div
                                     key={index}
-                                    className="aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800"
+                                    className="aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative"
                                 >
-                                    <img
+                                    <Image
                                         src={screenshot}
                                         alt={`${project.title} screenshot ${index + 1}`}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 400px"
+                                        className="object-cover"
                                     />
                                 </div>
                             ))}
