@@ -4,11 +4,11 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Database components — change these to move to a different host/user/password
+    # Database components — MUST be set via environment variables, no defaults for security
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = "postgres"
+    DB_USER: str
+    DB_PASSWORD: str
     DB_NAME: str = "portfolio"
 
     @property
