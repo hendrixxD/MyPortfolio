@@ -1,12 +1,9 @@
-const { withSentryConfig } = require("@sentry/nextjs");
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   devIndicators: {
-    buildActivity: false,
-    buildActivityPosition: 'bottom-right',
+    position: 'bottom-right',
   },
   images: {
     remotePatterns: [
@@ -26,9 +23,6 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 2592000, // 30 days
-  },
-  experimental: {
-    instrumentationHook: true,
   },
   async headers() {
     return [
@@ -77,26 +71,4 @@ const nextConfig = {
   },
 };
 
-// Sentry configuration options
-const sentryOptions = {
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  silent: true,
-
-  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers
-  tunnelRoute: "/monitoring",
-
-  // Hides source maps from generated client bundles
-  hideSourceMaps: true,
-
-  // Automatically instruments Next.js data fetching methods and API routes
-  autoInstrumentServerFunctions: true,
-  autoInstrumentMiddleware: true,
-
-  // Disables automatic instrumentation of Vercel Cron Monitors
-  automaticVercelMonitors: false,
-};
-
-// Only wrap with Sentry if DSN is configured
-module.exports = process.env.NEXT_PUBLIC_SENTRY_DSN
-  ? withSentryConfig(nextConfig, sentryOptions)
-  : nextConfig;
+module.exports = nextConfig;
