@@ -5,6 +5,13 @@
 
 set -e
 
+# Change to project root (parent of scripts directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+echo "Working directory: $PROJECT_ROOT"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -13,10 +20,20 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}=== Portfolio Production Setup ===${NC}\n"
 
-# Check if .env.production exists
+# Check if .env.production exists, create from template if not
 if [ ! -f ".env.production" ]; then
-    echo -e "${RED}Error: .env.production file not found${NC}"
-    exit 1
+    echo -e "${YELLOW}.env.production not found${NC}"
+
+    if [ -f ".env.production.example" ]; then
+        echo -e "${BLUE}Creating .env.production from template...${NC}"
+        cp .env.production.example .env.production
+        echo -e "${GREEN}✓ Created .env.production from .env.production.example${NC}"
+        echo -e "${YELLOW}⚠️  Remember to configure all placeholder values${NC}\n"
+    else
+        echo -e "${RED}Error: .env.production.example template not found${NC}"
+        echo -e "${YELLOW}Please ensure .env.production.example exists in the project root${NC}"
+        exit 1
+    fi
 fi
 
 # Function to check for placeholder values
@@ -110,6 +127,19 @@ setup_env() {
 }
 
 # Main menu
+echo -e "${BLUE}Current status:${NC}"
+if [ -f ".env.production" ]; then
+    echo -e "  ${GREEN}✓ .env.production exists${NC}"
+    if grep -q "CHANGE_ME" .env.production 2>/dev/null; then
+        echo -e "  ${YELLOW}⚠️  Contains placeholder values${NC}"
+    else
+        echo -e "  ${GREEN}✓ Appears to be configured${NC}"
+    fi
+else
+    echo -e "  ${YELLOW}⚠️  .env.production will be created from template${NC}"
+fi
+
+echo ""
 echo "What would you like to do?"
 echo "1. Check for placeholders"
 echo "2. Setup production configuration"

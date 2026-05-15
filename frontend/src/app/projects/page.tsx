@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 interface ProjectsPageProps {
-    searchParams: { page?: string; category?: string; tag?: string };
+    searchParams: Promise<{ page?: string; category?: string; tag?: string }>;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -28,9 +28,10 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
-    const page = parseInt(searchParams.page || '1');
-    const category = searchParams.category;
-    const tag = searchParams.tag;
+    const params = await searchParams;
+    const page = parseInt(params.page || '1');
+    const category = params.category;
+    const tag = params.tag;
 
     const [projectsRes, categories] = await Promise.all([
         getProjects({ page, page_size: 12, category, tag }).catch(() => ({ items: [], total: 0, pages: 1, page: 1, page_size: 12 })),

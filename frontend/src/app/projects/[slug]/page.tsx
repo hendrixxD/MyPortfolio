@@ -10,12 +10,13 @@ import { getProject, getProjectSlugs } from '@/lib/api';
 import 'highlight.js/styles/github-dark.css';
 
 interface ProjectPageProps {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
     try {
-        const project = await getProject(params.slug);
+        const { slug } = await params;
+        const project = await getProject(slug);
 
         return {
             title: project.meta_title || project.title,
@@ -52,9 +53,10 @@ export async function generateStaticParams() {
 export const revalidate = 60;
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
+    const { slug } = await params;
     let project;
     try {
-        project = await getProject(params.slug);
+        project = await getProject(slug);
     } catch {
         notFound();
     }

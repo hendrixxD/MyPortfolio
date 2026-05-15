@@ -1,22 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import '@fontsource/inter/latin.css';
+import '@fontsource/jetbrains-mono/latin.css';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ThemeProvider } from '@/context/ThemeProvider';
 import { PageTracker } from '@/components/PageTracker';
-
-const inter = Inter({
-    subsets: ['latin'],
-    variable: '--font-inter',
-    display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-    subsets: ['latin'],
-    variable: '--font-jetbrains',
-    display: 'swap',
-});
 
 export const metadata: Metadata = {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
@@ -88,7 +77,7 @@ export default function RootLayout({
             <head>
                 <link rel="icon" href="data:," />
             </head>
-            <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+            <body className="font-sans antialiased">
                 <ThemeProvider>
                     <PageTracker />
                     <a href="#main-content" className="skip-link">
