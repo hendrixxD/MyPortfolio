@@ -331,9 +331,9 @@ export default async function HomePage() {
                                         {pub.authors && (
                                             <span className="font-mono">{pub.authors}</span>
                                         )}
-                                        {pub.published_date && (
+                                        {pub.year && (
                                             <span className="font-mono text-[#444]">
-                                                · {formatDate(pub.published_date, 'year')}
+                                                · {pub.year}
                                             </span>
                                         )}
                                     </div>

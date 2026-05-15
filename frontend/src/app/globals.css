@@ -4,6 +4,9 @@
 
 @layer base {
   :root {
+    /* Font Variables */
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-jetbrains: 'JetBrains Mono', monospace;
     /* Professional Dark Theme - Always Dark */
     --background: 9 9 11;
     --foreground: 250 250 250;

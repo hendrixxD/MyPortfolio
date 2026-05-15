@@ -357,14 +357,11 @@ export async function getPublications(): Promise<Publication[]> {
 
 export async function getRecentPublications(): Promise<Publication[]> {
     const allPublications = await getPublications();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
+    // Sort by year (most recent first) and return top 4
     return allPublications
-        .filter(pub => {
-            if (!pub.published_date) return false;
-            return new Date(pub.published_date) >= oneMonthAgo;
-        })
+        .filter(pub => pub.year !== null)
+        .sort((a, b) => (b.year || 0) - (a.year || 0))
         .slice(0, 4);
 }
 

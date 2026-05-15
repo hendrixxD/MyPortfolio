@@ -15,12 +15,13 @@ import { ArticleComments } from '@/components/ui/ArticleComments';
 import 'highlight.js/styles/github-dark.css';
 
 interface ArticlePageProps {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
     try {
-        const article = await getArticle(params.slug);
+        const { slug } = await params;
+        const article = await getArticle(slug);
 
         return {
             title: article.meta_title || article.title,
@@ -59,9 +60,10 @@ export async function generateStaticParams() {
 export const revalidate = 60;
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
+    const { slug } = await params;
     let article;
     try {
-        article = await getArticle(params.slug);
+        article = await getArticle(slug);
     } catch {
         notFound();
     }

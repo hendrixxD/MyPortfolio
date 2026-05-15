@@ -15,7 +15,7 @@ logger = get_logger()
 
 def init_sentry():
     """Initialize Sentry for error tracking and performance monitoring."""
-    if not settings.SENTRY_DSN:
+    if not settings.SENTRY_DSN or settings.SENTRY_DSN.startswith("CHANGE_ME"):
         logger.info("Sentry DSN not configured, skipping Sentry initialization")
         return
 

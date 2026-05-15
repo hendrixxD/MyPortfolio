@@ -17,13 +17,14 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 interface ArticlesPageProps {
-    searchParams: { page?: string; tag?: string; search?: string };
+    searchParams: Promise<{ page?: string; tag?: string; search?: string }>;
 }
 
 export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
-    const page = parseInt(searchParams.page || '1');
-    const tag = searchParams.tag;
-    const search = searchParams.search;
+    const params = await searchParams;
+    const page = parseInt(params.page || '1');
+    const tag = params.tag;
+    const search = params.search;
 
     const [articlesRes, tags] = await Promise.all([
         getArticles({ page, page_size: 10, tag, search }).catch(() => ({ items: [], total: 0, pages: 1, page: 1, page_size: 10 })),

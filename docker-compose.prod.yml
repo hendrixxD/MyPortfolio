@@ -1,8 +1,11 @@
 services:
-  db:
+  # Portfolio Database
+  portfolio_db:
     image: postgres:15-alpine
     container_name: portfolio_db_prod
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -21,6 +24,8 @@ services:
     image: redis:7-alpine
     container_name: portfolio_redis_prod
     restart: unless-stopped
+    env_file:
+      - .env
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
@@ -38,8 +43,10 @@ services:
       dockerfile: Dockerfile
     container_name: portfolio_backend_prod
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DB_HOST: db
+      DB_HOST: portfolio_db
       DB_PORT: 5432
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -61,7 +68,7 @@ services:
     expose:
       - "8000"
     depends_on:
-      db:
+      portfolio_db:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -75,45 +82,67 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      network: host
     container_name: portfolio_frontend_prod
     restart: unless-stopped
+    env_file:
+      - .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       NEXT_PUBLIC_SITE_URL: ${SITE_URL}
       NODE_ENV: production
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
     depends_on:
       - backend
     networks:
       - portfolio_network
 
-  nginx:
-    image: nginx:alpine
-    container_name: portfolio_nginx
+  # Nginx Proxy Manager
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx_proxy_manager
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80' # Public HTTP
+      - '443:443' # Public HTTPS
+      - '81:81' # Admin UI
+    environment:
+      TZ: "Africa/Lagos" # Adjust to your timezone
+      DB_POSTGRES_HOST: 'npm_db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: 'npm'
+      DB_POSTGRES_PASSWORD: 'npmpass'
+      DB_POSTGRES_NAME: 'npm'
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
-      - backend_uploads:/var/www/uploads:ro
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+      - backend_uploads:/var/www/uploads:ro # Access to backend uploads
     depends_on:
+      - npm_db
       - frontend
       - backend
     networks:
       - portfolio_network
 
-  certbot:
-    image: certbot/certbot
-    container_name: portfolio_certbot
+  # NPM Database
+  npm_db:
+    image: postgres:17
+    container_name: npm_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: 'npm'
+      POSTGRES_PASSWORD: 'npmpass'
+      POSTGRES_DB: 'npm'
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+      - npm_postgres_data:/var/lib/postgresql/data
     networks:
       - portfolio_network
 
@@ -121,6 +150,7 @@ volumes:
   postgres_data:
   redis_data:
   backend_uploads:
+  npm_postgres_data:
 
 networks:
   portfolio_network:
