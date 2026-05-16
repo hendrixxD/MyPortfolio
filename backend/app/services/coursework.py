@@ -24,7 +24,7 @@ def get_coursework_list(
         query = query.filter(Coursework.category == category)
     
     return query.order_by(
-        Coursework.display_order.asc(),
+        Coursework.order.asc(),
         Coursework.year.desc().nullslast(),
         Coursework.course_name.asc()
     ).all()
@@ -63,7 +63,7 @@ def get_highlighted_coursework(db: Session) -> List[Coursework]:
     return db.query(Coursework).filter(
         Coursework.is_active == True,
         Coursework.is_highlighted == True
-    ).order_by(Coursework.display_order.asc()).all()
+    ).order_by(Coursework.order.asc()).all()
 
 
 def get_coursework_by_id(db: Session, course_id: int) -> Coursework | None:
