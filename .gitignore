@@ -227,3 +227,12 @@ __marimo__/
 
 # Runtime upload storage
 image/
+
+# NPM data
+data/
+letsencrypt/
+
+# Cloud Run deployment files (optional)
+*.cloudrun
+deploy-cloudrun.sh
+setup-secrets.sh
