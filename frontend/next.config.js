@@ -1,7 +1,15 @@
 /** @type {import('next').NextConfig} */
+
+// Detect deployment environment
+const isVercel = process.env.VERCEL === '1';
+const isDocker = process.env.DOCKER === '1' || process.env.DOCKER_BUILD === 'true';
+
+// Use standalone only for Docker, not for Vercel
+const outputMode = isDocker && !isVercel ? 'standalone' : undefined;
+
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  ...(outputMode && { output: outputMode }),
   devIndicators: {
     position: 'bottom-right',
   },
