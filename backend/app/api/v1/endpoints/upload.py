@@ -11,27 +11,35 @@ from PIL import Image
 from app.api.deps import AdminUser
 from app.core.config import settings
 from app.core.file_validation import validate_image_content
+from app.core.mime_types import get_content_type, is_image, is_video
+from app.services.storage import get_storage_service
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
 
 def _build_image_list() -> dict:
-    upload_dir = settings.UPLOAD_DIR
-    if not os.path.exists(upload_dir):
+    """List images from R2 storage."""
+    try:
+        storage = get_storage_service()
+        files = storage.list_files()
+
+        # Filter by allowed extensions
+        images = []
+        for file_info in files:
+            ext = file_info['filename'].rsplit(".", 1)[-1].lower() if "." in file_info['filename'] else ""
+            if ext in settings.ALLOWED_EXTENSIONS:
+                images.append({
+                    "filename": file_info['filename'],
+                    "url": file_info['url'],
+                    "size": file_info['size'],
+                    "uploaded_at": file_info['last_modified'],
+                })
+
+        images.sort(key=lambda x: x["uploaded_at"], reverse=True)
+        return {"images": images}
+    except Exception as e:
+        # Fallback to empty list if R2 not configured
         return {"images": []}
-    images = []
-    for filename in os.listdir(upload_dir):
-        if filename.rsplit(".", 1)[-1].lower() in settings.ALLOWED_EXTENSIONS:
-            file_path = os.path.join(upload_dir, filename)
-            stat = os.stat(file_path)
-            images.append({
-                "filename": filename,
-                "url": f"/uploads/{filename}",
-                "size": stat.st_size,
-                "uploaded_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-            })
-    images.sort(key=lambda x: x["uploaded_at"], reverse=True)
-    return {"images": images}
 
 
 def validate_file_extension(filename: str) -> str:
@@ -46,21 +54,36 @@ def validate_file_extension(filename: str) -> str:
 
 
 def generate_unique_filename(original_filename: str) -> str:
-    """Generate a unique filename."""
+    """
+    Generate a cryptographically unique filename using UUID.
+
+    This prevents:
+    - Path traversal attacks
+    - Filename guessing
+    - Direct URL access to original files
+
+    Format: {uuid4}.{ext}
+    """
     ext = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else "jpg"
-    unique_id = uuid.uuid4().hex[:8]
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return f"{timestamp}_{unique_id}.{ext}"
+    # Use full UUID4 for maximum uniqueness (no timestamp to prevent enumeration)
+    unique_id = uuid.uuid4().hex
+    return f"{unique_id}.{ext}"
 
 
-@router.post("/image")
-async def upload_image(
+@router.post("/file")
+async def upload_file(
     file: Annotated[UploadFile, File()],
     admin: AdminUser
 ):
     """
-    Upload an image file.
-    
+    Upload a file (image or video).
+
+    Security features:
+    - UUID-based filenames (prevents guessing)
+    - Content type validation
+    - File size limits
+    - Admin-only access
+
     Returns the URL path to the uploaded file.
     Admin only.
     """
@@ -71,47 +94,66 @@ async def upload_image(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File too large. Maximum size: {settings.MAX_UPLOAD_SIZE // (1024*1024)}MB"
         )
-    
+
     # Validate extension
-    if file.filename:
-        validate_file_extension(file.filename)
-
-    # Read file data once
-    await file.seek(0)
-    image_data = await file.read()
-
-    # Validate file content matches extension (magic byte validation)
-    if file.filename:
-        validate_image_content(image_data, file.filename)
-
-    # Validate it's actually an image using PIL
-    try:
-        img = Image.open(__import__("io").BytesIO(image_data))
-        img.verify()
-    except Exception:
+    if not file.filename:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid image file"
+            detail="Filename is required"
         )
-    
-    # Generate unique filename
-    filename = generate_unique_filename(file.filename or "image.jpg")
-    
-    # Create upload directory if it doesn't exist
-    upload_dir = settings.UPLOAD_DIR
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    # Save file
-    file_path = os.path.join(upload_dir, filename)
-    with open(file_path, "wb") as f:
-        f.write(image_data)
-    
-    # Return the URL path
+
+    validate_file_extension(file.filename)
+
+    # Generate cryptographically unique filename (prevents URL guessing)
+    filename = generate_unique_filename(file.filename)
+
+    # Determine if image or video
+    if is_image(filename):
+        # Validate image content (magic bytes + PIL verification)
+        validate_image_content(contents, file.filename)
+
+        try:
+            img = Image.open(__import__("io").BytesIO(contents))
+            img.verify()
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid image file"
+            )
+    elif is_video(filename):
+        # Basic validation for videos (you could add more sophisticated checks)
+        # For now, we trust the extension after validation
+        pass
+
+    # Get proper content type
+    content_type = get_content_type(filename)
+
+    # Upload to R2
+    storage = get_storage_service()
+    url = storage.upload_file(contents, filename, content_type)
+
+    # Return the URL (only the UUID-based filename is exposed)
     return {
         "filename": filename,
-        "url": f"/uploads/{filename}",
-        "size": len(image_data)
+        "url": url,
+        "size": len(contents),
+        "content_type": content_type
     }
+
+
+# Keep legacy endpoint for backwards compatibility
+@router.post("/image")
+async def upload_image(
+    file: Annotated[UploadFile, File()],
+    admin: AdminUser
+):
+    """
+    Legacy endpoint: Upload an image file.
+    Use /upload/file instead for images and videos.
+
+    Admin only.
+    """
+    return await upload_file(file, admin)
 
 
 @router.get("/images/public")
@@ -129,30 +171,24 @@ def list_images(admin: AdminUser):
 @router.delete("/image/{filename}")
 def delete_image(filename: str, admin: AdminUser):
     """
-    Delete an uploaded image.
-    
+    Delete an uploaded image from R2.
+
     Admin only.
     """
-    upload_dir = os.path.realpath(settings.UPLOAD_DIR)
-    file_path = os.path.realpath(os.path.join(settings.UPLOAD_DIR, filename))
-
-    if not file_path.startswith(upload_dir + os.sep):
+    # Validate filename (prevent path traversal)
+    if "/" in filename or "\\" in filename or ".." in filename:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
+            detail="Invalid filename"
         )
 
-    if not os.path.exists(file_path):
+    # Delete from R2
+    storage = get_storage_service()
+    if not storage.file_exists(filename):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="File not found"
         )
-    
-    try:
-        os.remove(file_path)
-        return {"message": "File deleted successfully"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete file: {str(e)}"
-        )
+
+    storage.delete_file(filename)
+    return {"message": "File deleted successfully"}

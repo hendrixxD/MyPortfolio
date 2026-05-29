@@ -239,3 +239,16 @@ letsencrypt/
 *.cloudrun
 deploy-cloudrun.sh
 setup-secrets.sh
+
+# Documentation and project notes (generated/temporary)
+/docs/
+*.md
+*.txt
+*.sh
+!README.md
+!frontend/README.md
+!backend/README.md
+!install.sh
+!setup.sh
+
+.playwright-mcp/

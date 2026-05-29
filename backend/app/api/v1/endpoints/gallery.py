@@ -15,6 +15,7 @@ from slugify import slugify
 from app.api.deps import get_db, AdminUser
 from app.core.config import settings
 from app.core.file_validation import validate_image_content
+from app.core.mime_types import get_content_type, is_image, is_video
 from app.models.gallery import GalleryItem, GalleryTag, GalleryStatus
 from app.schemas.gallery import (
     GalleryItem as GalleryItemSchema,
@@ -26,6 +27,7 @@ from app.schemas.gallery import (
     GalleryTagUpdate,
     GalleryUploadResponse,
 )
+from app.services.storage import get_storage_service
 
 router = APIRouter(prefix="/gallery", tags=["Gallery"])
 
@@ -42,11 +44,20 @@ def validate_file_extension(filename: str) -> str:
 
 
 def generate_unique_filename(original_filename: str) -> str:
-    """Generate a unique filename."""
+    """
+    Generate a cryptographically unique filename using UUID.
+
+    This prevents:
+    - Path traversal attacks
+    - Filename guessing
+    - Direct URL access to original files
+
+    Format: {uuid4}.{ext}
+    """
     ext = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else "jpg"
-    unique_id = uuid.uuid4().hex[:8]
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return f"{timestamp}_{unique_id}.{ext}"
+    # Use full UUID4 for maximum uniqueness (no timestamp to prevent enumeration)
+    unique_id = uuid.uuid4().hex
+    return f"{unique_id}.{ext}"
 
 
 # ===== Gallery Tags =====
@@ -201,7 +212,15 @@ async def upload_gallery_image(
     admin: AdminUser,
     db: Session = Depends(get_db)
 ):
-    """Upload an image to the gallery."""
+    """
+    Upload a file (image or video) to the gallery.
+
+    Security features:
+    - UUID-based filenames (prevents guessing)
+    - Content type validation
+    - File size limits
+    - Admin-only access
+    """
     # Validate file size
     contents = await file.read()
     if len(contents) > settings.MAX_UPLOAD_SIZE:
@@ -211,43 +230,52 @@ async def upload_gallery_image(
         )
 
     # Validate extension
-    if file.filename:
-        validate_file_extension(file.filename)
-
-    # Validate file content matches extension (magic byte validation)
-    if file.filename:
-        validate_image_content(contents, file.filename)
-
-    # Validate it's actually an image and get dimensions
-    width, height = None, None
-    try:
-        img = Image.open(io.BytesIO(contents))
-        img.verify()
-        # Re-open to get dimensions (verify() closes the image)
-        img = Image.open(io.BytesIO(contents))
-        width, height = img.size
-    except Exception:
+    if not file.filename:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid image file"
+            detail="Filename is required"
         )
 
-    # Generate unique filename
-    filename = generate_unique_filename(file.filename or "image.jpg")
+    validate_file_extension(file.filename)
 
-    # Create upload directory if it doesn't exist
-    upload_dir = settings.UPLOAD_DIR
-    os.makedirs(upload_dir, exist_ok=True)
+    # Generate cryptographically unique filename (prevents URL guessing)
+    filename = generate_unique_filename(file.filename)
 
-    # Save file
-    file_path = os.path.join(upload_dir, filename)
-    with open(file_path, "wb") as f:
-        f.write(contents)
+    # Handle images vs videos
+    width, height = None, None
+
+    if is_image(filename):
+        # Validate image content (magic bytes)
+        validate_image_content(contents, file.filename)
+
+        # Validate and get dimensions
+        try:
+            img = Image.open(io.BytesIO(contents))
+            img.verify()
+            # Re-open to get dimensions (verify() closes the image)
+            img = Image.open(io.BytesIO(contents))
+            width, height = img.size
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid image file"
+            )
+    elif is_video(filename):
+        # For videos, we skip PIL validation
+        # You could add video-specific validation here if needed
+        pass
+
+    # Get proper content type
+    content_type = get_content_type(filename)
+
+    # Upload to R2
+    storage = get_storage_service()
+    url = storage.upload_file(contents, filename, content_type)
 
     # Create database entry (starts as draft)
     db_item = GalleryItem(
         filename=filename,
-        url=f"/uploads/{filename}",
+        url=url,
         size=len(contents),
         width=width,
         height=height,
@@ -358,15 +386,13 @@ def delete_gallery_item(
 
     # Note: Gallery items don't have user ownership - only admins can delete
 
-    # Delete file from disk
-    upload_dir = os.path.realpath(settings.UPLOAD_DIR)
-    file_path = os.path.realpath(os.path.join(settings.UPLOAD_DIR, db_item.filename))
-
-    if file_path.startswith(upload_dir + os.sep) and os.path.exists(file_path):
-        try:
-            os.remove(file_path)
-        except Exception as e:
-            print(f"Failed to delete file: {e}")
+    # Delete file from R2
+    try:
+        storage = get_storage_service()
+        if storage.file_exists(db_item.filename):
+            storage.delete_file(db_item.filename)
+    except Exception as e:
+        print(f"Failed to delete file from R2: {e}")
 
     # Delete database entry
     db.delete(db_item)

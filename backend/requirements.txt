@@ -44,3 +44,8 @@ feedgen==1.0.0
 # Markdown
 markdown==3.5.2
 Pygments==2.17.2
+
+# Cloud Storage (Cloudflare R2 / S3-compatible)
+# boto3: AWS SDK for Python - used for R2 file uploads
+# Includes: botocore, s3transfer, jmespath (auto-installed)
+boto3==1.34.51

@@ -30,15 +30,29 @@ async def lifespan(app: FastAPI):
     # Startup
     init_sentry()  # Initialize Sentry for error tracking
     logger.info("Starting up Portfolio API...")
-    
+
     # Create logs directory
     os.makedirs("logs", exist_ok=True)
-    
-    # Create uploads directory
+
+    # Create uploads directory (backwards compatibility for local files)
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    
+
+    # Check R2 storage configuration
+    from app.services.storage import get_storage_service
+    try:
+        storage = get_storage_service()
+        if storage.is_configured:
+            logger.info(f"✅ R2 Storage: Configured ({storage.bucket_name})")
+            logger.info(f"   Public URL: {storage.public_url}")
+        else:
+            logger.warning("⚠️  R2 Storage: NOT configured")
+            logger.warning("   File uploads will return 503 error")
+            logger.warning("   Add R2 credentials to backend/.env to enable")
+    except Exception as e:
+        logger.error(f"❌ R2 Storage initialization error: {e}")
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Portfolio API...")
 
@@ -75,7 +89,8 @@ app.add_middleware(
 # Add visitor tracking middleware
 app.add_middleware(VisitorTrackingMiddleware)
 
-# Mount static files for uploads
+# Mount static files for uploads (backwards compatibility for local files)
+# Note: New uploads go to R2, but this serves any remaining local files
 if os.path.exists(settings.UPLOAD_DIR):
     app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 

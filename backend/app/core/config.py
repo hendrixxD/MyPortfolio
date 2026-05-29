@@ -29,8 +29,16 @@ class Settings(BaseSettings):
 
     # Upload
     UPLOAD_DIR: str = "./uploads"
-    MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
-    ALLOWED_EXTENSIONS: List[str] = ["jpg", "jpeg", "png", "gif", "webp"]
+    MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024  # 100MB (for videos)
+
+    # Allowed file extensions (images + videos)
+    ALLOWED_EXTENSIONS: List[str] = [
+        # Images
+        "jpg", "jpeg", "png", "gif", "webp", "svg", "bmp", "tiff", "tif",
+        "ico", "heic", "heif", "avif",
+        # Videos
+        "mp4", "webm", "mov", "avi", "mkv", "flv", "wmv", "m4v", "mpeg", "mpg"
+    ]
 
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60
@@ -49,6 +57,13 @@ class Settings(BaseSettings):
     SENTRY_ENVIRONMENT: str = "production"
     SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 10% of requests for APM
     SENTRY_PROFILES_SAMPLE_RATE: float = 0.1
+
+    # Cloudflare R2 Storage
+    R2_ACCOUNT_ID: str = ""
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_BUCKET_NAME: str = ""
+    R2_PUBLIC_URL: str = "https://uploads.heistats.com"
 
     class Config:
         env_file = ".env"
