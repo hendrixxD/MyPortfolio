@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getApiUrl } from '@/lib/config';
 
 /**
  * Merge Tailwind CSS classes with clsx
@@ -114,7 +115,7 @@ export function getImageUrl(path: string | null | undefined): string {
     if (!path) return '';
     if (path.startsWith('http')) return path;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const apiUrl = getApiUrl();
     return `${apiUrl}${path.startsWith('/') ? '' : '/'}${path}`;
 }
 

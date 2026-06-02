@@ -26,18 +26,19 @@ limiter = Limiter(key_func=get_remote_address)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan events."""
+    """
+    Application lifespan events.
+
+    Optimized for serverless environments:
+    - No directory creation (ephemeral filesystem)
+    - Minimal startup time
+    - Graceful degradation if services unavailable
+    """
     # Startup
-    init_sentry()  # Initialize Sentry for error tracking
+    init_sentry()  # Initialize Sentry for error tracking (graceful if not configured)
     logger.info("Starting up Portfolio API...")
 
-    # Create logs directory
-    os.makedirs("logs", exist_ok=True)
-
-    # Create uploads directory (backwards compatibility for local files)
-    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-
-    # Check R2 storage configuration
+    # Check R2 storage configuration (gracefully handles missing credentials)
     from app.services.storage import get_storage_service
     try:
         storage = get_storage_service()
@@ -45,9 +46,7 @@ async def lifespan(app: FastAPI):
             logger.info(f"✅ R2 Storage: Configured ({storage.bucket_name})")
             logger.info(f"   Public URL: {storage.public_url}")
         else:
-            logger.warning("⚠️  R2 Storage: NOT configured")
-            logger.warning("   File uploads will return 503 error")
-            logger.warning("   Add R2 credentials to backend/.env to enable")
+            logger.warning("⚠️  R2 Storage: NOT configured - file uploads disabled")
     except Exception as e:
         logger.error(f"❌ R2 Storage initialization error: {e}")
 
@@ -88,11 +87,6 @@ app.add_middleware(
 
 # Add visitor tracking middleware
 app.add_middleware(VisitorTrackingMiddleware)
-
-# Mount static files for uploads (backwards compatibility for local files)
-# Note: New uploads go to R2, but this serves any remaining local files
-if os.path.exists(settings.UPLOAD_DIR):
-    app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 # Include API router
 app.include_router(api_router)

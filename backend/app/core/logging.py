@@ -1,5 +1,9 @@
 """
 Logging configuration using loguru.
+
+Configured for serverless environments (Vercel):
+- Logs to stdout only (captured by Vercel's log aggregation)
+- No file handlers (ephemeral filesystem)
 """
 import sys
 from loguru import logger
@@ -8,29 +12,12 @@ from loguru import logger
 logger.remove()
 
 # Add console handler with custom format
+# In serverless environments, stdout is captured and persisted automatically
 logger.add(
     sys.stdout,
     colorize=True,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     level="INFO",
-)
-
-# Add file handler for errors
-logger.add(
-    "logs/error.log",
-    rotation="10 MB",
-    retention="30 days",
-    level="ERROR",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
-)
-
-# Add file handler for all logs
-logger.add(
-    "logs/app.log",
-    rotation="50 MB",
-    retention="7 days",
-    level="INFO",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
 )
 
 

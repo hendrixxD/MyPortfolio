@@ -13,6 +13,7 @@ import {
 import { formatDate, getReadingTime } from '@/lib/utils';
 import { TimeBasedGreeting } from '@/components/ui/TimeBasedGreeting';
 import { HomeBackground } from '@/components/backgrounds/AnimatedBackgrounds';
+import { getApiUrl } from '@/lib/config';
 
 export const revalidate = 60;
 
@@ -57,7 +58,7 @@ async function getHomeData() {
 
 export default async function HomePage() {
     const { articles, projects, isFeaturedArticles, isFeaturedProjects, galleryItems, publications } = await getHomeData();
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const API_URL = getApiUrl();
 
     return (
         <div className="min-h-screen relative text-[#e2d9c8]">
@@ -286,7 +287,7 @@ export default async function HomePage() {
                                     className="bg-[#080808] aspect-square overflow-hidden group relative"
                                 >
                                     <Image
-                                        src={`${API_URL}${item.url}`}
+                                        src={item.url}
                                         alt={item.caption || 'Gallery image'}
                                         fill
                                         sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"

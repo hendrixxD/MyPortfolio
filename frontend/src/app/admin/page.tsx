@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FileText, FolderKanban, MessageSquare } from 'lucide-react';
+import { getApiUrl } from '@/lib/config';
 
 interface DashboardStats {
     articles: number;
@@ -17,7 +18,7 @@ export default function AdminDashboard() {
             const token = localStorage.getItem('auth_token');
             if (!token) return;
             try {
-                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                const API_URL = getApiUrl();
                 const [articlesRes, projectsRes, messagesRes] = await Promise.all([
                     fetch(`${API_URL}/api/v1/articles/admin?page_size=1`, { headers: { Authorization: `Bearer ${token}` } }),
                     fetch(`${API_URL}/api/v1/projects/admin?page_size=1`, { headers: { Authorization: `Bearer ${token}` } }),

@@ -5,8 +5,9 @@ import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
+from sqlalchemy.orm import sessionmaker
 
-from app.core.database import SessionLocal
+from app.core.database import get_engine
 from app.services.visitor_tracking import visitor_tracking_service
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,8 @@ class VisitorTrackingMiddleware(BaseHTTPMiddleware):
         # Only track successful responses (200-299)
         if 200 <= response.status_code < 300:
             try:
-                # Create database session
+                # Create database session (uses lazy engine initialization)
+                SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=get_engine())
                 db = SessionLocal()
                 try:
                     # Track visitor (async but we don't await to avoid blocking)

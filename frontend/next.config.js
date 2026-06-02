@@ -23,6 +23,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'uploads.heistats.com',
+      },
+      {
+        protocol: 'https',
         hostname: '*.com',
         pathname: '/uploads/**',
       },
@@ -66,14 +70,22 @@ const nextConfig = {
     ];
   },
   async rewrites() {
+    // Only proxy to external API if NEXT_PUBLIC_API_URL is set
+    // Otherwise, API runs on same domain (Vercel unified deployment)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      return [];
+    }
+
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: `${apiUrl}/api/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/uploads/:path*`,
+        destination: `${apiUrl}/uploads/:path*`,
       },
     ];
   },

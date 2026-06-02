@@ -20,8 +20,9 @@ import type {
     GalleryItemBrief,
     GalleryTag,
 } from '@/types';
+import { getApiUrl } from './config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = getApiUrl();
 
 export class ApiError extends Error {
     status: number;

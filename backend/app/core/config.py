@@ -1,19 +1,39 @@
+import os
 from typing import List
-from pydantic_settings import BaseSettings
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Database components — MUST be set via environment variables, no defaults for security
+    model_config = SettingsConfigDict(
+        # Only load .env file if it exists (local dev)
+        # In serverless (Vercel), env vars come from platform
+        env_file=".env" if os.path.exists(".env") else None,
+        extra="allow"
+    )
+
+    # Database - supports two modes:
+    # 1. Direct DATABASE_URL (Neon/Vercel - preferred)
+    # 2. Component-based (legacy Aiven - fallback for local dev)
+    database_url_direct: str = Field(default="", alias="DATABASE_URL")
+
+    # Legacy database components (optional, for backward compatibility)
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
-    DB_USER: str
-    DB_PASSWORD: str
+    DB_USER: str = ""
+    DB_PASSWORD: str = ""
     DB_NAME: str = "portfolio"
 
     @property
     def DATABASE_URL(self) -> str:
-        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        # If DATABASE_URL is set directly (Neon/Vercel), use it
+        if self.database_url_direct:
+            return self.database_url_direct
+        # Otherwise, construct from components (legacy Aiven)
+        if self.DB_USER and self.DB_PASSWORD:
+            return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        raise ValueError("DATABASE_URL or DB_USER+DB_PASSWORD must be set")
 
     # Security
     SECRET_KEY: str
@@ -21,7 +41,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:3000"
+    CORS_ORIGINS: str = "http://localhost:3000,https://ldj.heistats.com,https://mybackendapi-six.vercel.app"
 
     @property
     def cors_origins_list(self) -> List[str]:
@@ -64,10 +84,6 @@ class Settings(BaseSettings):
     R2_SECRET_ACCESS_KEY: str = ""
     R2_BUCKET_NAME: str = ""
     R2_PUBLIC_URL: str = "https://uploads.heistats.com"
-
-    class Config:
-        env_file = ".env"
-        extra = "allow"
 
 
 @lru_cache()

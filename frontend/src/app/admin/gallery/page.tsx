@@ -16,8 +16,9 @@ import {
 } from '@/lib/api';
 import { validateImageFile, validateFileName } from '@/lib/fileValidation';
 import type { GalleryItemBrief, GalleryTag } from '@/types';
+import { getApiUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = getApiUrl();
 
 interface UploadProgress {
     filename: string;
@@ -56,8 +57,8 @@ export default function AdminGalleryPage() {
         try {
             const url = `/api/v1/gallery/items/all?${filterTag ? `tag=${filterTag}&` : ''}${statusFilter !== 'all' ? `status=${statusFilter}` : ''}`;
             const [itemsData, tagsData] = await Promise.all([
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+                fetch(`${API_URL}${url}`, {
+                    credentials: 'include' // Use cookies instead of localStorage token
                 }).then(r => r.json()),
                 getGalleryTags(),
             ]);

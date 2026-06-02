@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { getApiUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = getApiUrl();
 
 /**
  * Hook to track page views for analytics.

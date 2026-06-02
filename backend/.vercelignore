@@ -1,0 +1,44 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+tests/
+
+# Environment files (secrets loaded from Vercel)
+.env
+.env.*
+!.env.example
+
+# Logs (stdout captured by Vercel)
+logs/
+*.log
+
+# Local uploads (R2 used in production)
+uploads/
+
+# Development
+.git/
+.gitignore
+.DS_Store
+
+# Database migrations (already applied)
+alembic/
+scripts/
+
+# Documentation
+README.md
+*.md
+!requirements.txt

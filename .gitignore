@@ -252,3 +252,5 @@ setup-secrets.sh
 !setup.sh
 
 .playwright-mcp/
+.vercel
+.env*

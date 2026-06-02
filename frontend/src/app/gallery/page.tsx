@@ -6,8 +6,9 @@ import { X, ChevronLeft, ChevronRight, ZoomIn, Camera, Grid3X3, LayoutGrid, Tag 
 import { GalleryBackground } from '@/components/backgrounds/AnimatedBackgrounds';
 import { getGalleryItems, getGalleryTags, getGalleryItem } from '@/lib/api';
 import type { GalleryItemBrief, GalleryTag, GalleryItem } from '@/types';
+import { getApiUrl } from '@/lib/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = getApiUrl();
 
 export default function GalleryPage() {
     const [items, setItems] = useState<GalleryItemBrief[]>([]);
