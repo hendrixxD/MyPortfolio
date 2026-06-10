@@ -1,0 +1,83 @@
+[metadata]
+name = "staging"
+description = "Staging environment for testing before production"
+deployment_targets = ["vercel", "docker", "cloudrun"]
+
+[shared]
+# Variables common across all deployment targets
+SITE_NAME = "lengedandungjoshua-staging"
+SITE_DESCRIPTION = "Data Engineer & Chemical/Petroleum Technology Portfolio - Staging"
+ENVIRONMENT = "staging"
+ADMIN_EMAIL = "lengedandungjoshua@gmail.com"
+ADMIN_PASSWORD = "${STAGING_ADMIN_PASSWORD}"  # Different password for staging
+SECRET_KEY = "${STAGING_SECRET_KEY}"  # Use different secret for staging
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+MAX_UPLOAD_SIZE = 104857600
+RATE_LIMIT_PER_MINUTE = 100  # More lenient for testing
+
+[shared.cloudflare_r2]
+R2_ACCOUNT_ID = "${R2_ACCOUNT_ID}"
+R2_ACCESS_KEY_ID = "${R2_ACCESS_KEY_ID}"
+R2_SECRET_ACCESS_KEY = "${R2_SECRET_ACCESS_KEY}"
+R2_BUCKET_NAME = "lenge-dandung-joshua-staging"
+R2_PUBLIC_URL = "https://staging-uploads.heistats.com"
+
+[shared.sentry]
+SENTRY_DSN = "${SENTRY_DSN}"
+SENTRY_ENVIRONMENT = "staging"
+SENTRY_TRACES_SAMPLE_RATE = 1.0  # Full tracing in staging
+SENTRY_PROFILES_SAMPLE_RATE = 1.0
+
+# Vercel-specific configuration
+[targets.vercel]
+SITE_URL = "https://ldj-staging.vercel.app"
+NEXT_PUBLIC_SITE_URL = "https://ldj-staging.vercel.app"
+NEXT_PUBLIC_API_URL = ""  # Empty = same-origin API
+CORS_ORIGINS = "https://ldj-staging.vercel.app"
+DATABASE_URL = "${STAGING_DATABASE_URL}"  # Separate staging database
+REDIS_HOST = ""  # No Redis on Vercel - use in-memory fallback
+
+[targets.vercel.build]
+build_command = "cd frontend && npm run build"
+output_directory = "frontend/.next"
+install_command = "cd frontend && npm install"
+framework = "nextjs"
+python_runtime = "python3.12"
+
+# Docker-specific configuration
+[targets.docker]
+SITE_URL = "https://staging-ldj.heistats.com"
+NEXT_PUBLIC_SITE_URL = "https://staging-ldj.heistats.com"
+NEXT_PUBLIC_API_URL = "https://staging-api.ldj.heistats.com"
+CORS_ORIGINS = "https://staging-ldj.heistats.com,https://staging-api.ldj.heistats.com"
+
+[targets.docker.database]
+DB_HOST = "portfolio_db_staging"  # Container name
+DB_PORT = 5432
+DB_USER = "postgres"
+DB_PASSWORD = "${STAGING_POSTGRES_PASSWORD}"
+DB_NAME = "portfolio_staging"
+
+[targets.docker.redis]
+REDIS_HOST = "redis_staging"  # Container name
+REDIS_PORT = 6379
+REDIS_PASSWORD = "${STAGING_REDIS_PASSWORD}"
+
+# Cloud Run-specific configuration
+[targets.cloudrun]
+SITE_URL = "https://staging-ldj-cloudrun.heistats.com"
+NEXT_PUBLIC_SITE_URL = "https://staging-ldj-cloudrun.heistats.com"
+NEXT_PUBLIC_API_URL = "https://staging-api-cloudrun.heistats.com"
+CORS_ORIGINS = "https://staging-ldj-cloudrun.heistats.com"
+DATABASE_URL = "${STAGING_CLOUDSQL_DATABASE_URL}"
+REDIS_HOST = ""  # No Redis - use in-memory
+
+# Validation rules (less strict than production)
+[validation]
+required_vars = [
+    "STAGING_SECRET_KEY", "ADMIN_EMAIL",
+    "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"
+]
+no_localhost_in = ["SITE_URL", "NEXT_PUBLIC_SITE_URL", "CORS_ORIGINS", "R2_PUBLIC_URL"]
+https_required = ["SITE_URL", "NEXT_PUBLIC_SITE_URL", "R2_PUBLIC_URL"]

@@ -3,6 +3,8 @@ Gallery management endpoints.
 """
 import os
 import uuid
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends, Query
@@ -30,6 +32,22 @@ from app.schemas.gallery import (
 from app.services.storage import get_storage_service
 
 router = APIRouter(prefix="/gallery", tags=["Gallery"])
+
+# Thread pool executor for CPU-bound PIL operations
+_executor = ThreadPoolExecutor(max_workers=4)
+
+
+def _validate_image_sync(contents: bytes) -> tuple[int, int]:
+    """
+    Synchronous PIL validation and dimension extraction.
+
+    Runs in executor to prevent blocking the event loop.
+    """
+    img = Image.open(io.BytesIO(contents))
+    img.verify()
+    # Re-open to get dimensions (verify() closes the image)
+    img = Image.open(io.BytesIO(contents))
+    return img.size
 
 
 def validate_file_extension(filename: str) -> str:
@@ -248,13 +266,14 @@ async def upload_gallery_image(
         # Validate image content (magic bytes)
         validate_image_content(contents, file.filename)
 
-        # Validate and get dimensions
+        # Validate and get dimensions (async to prevent event loop blocking)
         try:
-            img = Image.open(io.BytesIO(contents))
-            img.verify()
-            # Re-open to get dimensions (verify() closes the image)
-            img = Image.open(io.BytesIO(contents))
-            width, height = img.size
+            loop = asyncio.get_event_loop()
+            width, height = await loop.run_in_executor(
+                _executor,
+                _validate_image_sync,
+                contents
+            )
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

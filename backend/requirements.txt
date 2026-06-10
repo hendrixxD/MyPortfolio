@@ -22,6 +22,7 @@ email-validator==2.2.0
 python-slugify==8.0.1
 python-dotenv==1.0.0
 Pillow==11.0.0
+psutil==5.9.8
 
 # Rate Limiting
 slowapi==0.1.9
@@ -49,3 +50,9 @@ Pygments==2.17.2
 # boto3: AWS SDK for Python - used for R2 file uploads
 # Includes: botocore, s3transfer, jmespath (auto-installed)
 boto3==1.34.51
+
+# Deployment tooling
+click==8.1.7
+rich==13.7.0
+tomli==2.0.1
+jinja2==3.1.3

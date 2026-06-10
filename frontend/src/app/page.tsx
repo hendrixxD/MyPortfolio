@@ -280,7 +280,7 @@ export default async function HomePage() {
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[#1c1c1c]">
-                            {galleryItems.map((item) => (
+                            {galleryItems.map((item, index) => (
                                 <Link
                                     key={item.id}
                                     href="/gallery"
@@ -292,7 +292,8 @@ export default async function HomePage() {
                                         fill
                                         sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                                         className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                        priority
+                                        priority={index < 3}
+                                        loading={index >= 3 ? 'lazy' : undefined}
                                     />
                                     {item.caption && (
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">

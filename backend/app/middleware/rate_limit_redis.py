@@ -20,7 +20,7 @@ class RedisRateLimiter:
 
     def __init__(
         self,
-        redis_url: str = "redis://localhost:6379/0",
+        redis_url: Optional[str] = None,
         requests_per_minute: int = 5,
         requests_per_hour: int = 20,
         fallback_to_memory: bool = True
@@ -30,21 +30,29 @@ class RedisRateLimiter:
         self.fallback_to_memory = fallback_to_memory
 
         # Try to connect to Redis
-        try:
-            self.redis_client = redis.from_url(
-                redis_url,
-                decode_responses=True,
-                socket_connect_timeout=2,
-                socket_timeout=2
-            )
-            # Test connection
-            self.redis_client.ping()
-            self.use_redis = True
-            logger.info("Redis rate limiter initialized successfully")
-        except (redis.ConnectionError, redis.TimeoutError) as e:
-            logger.warning(f"Redis connection failed: {e}. Falling back to in-memory rate limiting.")
+        if redis_url:
+            try:
+                self.redis_client = redis.from_url(
+                    redis_url,
+                    decode_responses=True,
+                    socket_connect_timeout=2,
+                    socket_timeout=2
+                )
+                # Test connection
+                self.redis_client.ping()
+                self.use_redis = True
+                logger.info("✅ Redis rate limiter initialized")
+            except (redis.ConnectionError, redis.TimeoutError) as e:
+                logger.warning(f"⚠️ Redis unavailable: {e}")
+                if not fallback_to_memory:
+                    raise
+                self.use_redis = False
+        else:
+            logger.info("ℹ️ Redis not configured, using in-memory rate limiting")
             self.use_redis = False
-            # Fallback in-memory storage
+
+        # Fallback in-memory storage
+        if not self.use_redis:
             self.minute_attempts: Dict[str, list] = {}
             self.hour_attempts: Dict[str, list] = {}
 
@@ -183,13 +191,23 @@ class RedisRateLimiter:
 login_rate_limiter: Optional[RedisRateLimiter] = None
 
 
-def get_login_rate_limiter(redis_url: str = None) -> RedisRateLimiter:
+def get_login_rate_limiter(redis_url: Optional[str] = None) -> RedisRateLimiter:
     """Get or create the login rate limiter instance."""
     global login_rate_limiter
     if login_rate_limiter is None:
+        # Try to get Redis URL from settings if not provided
+        if not redis_url:
+            from app.core.config import settings
+            redis_url = settings.redis_url
+
+        # Increased limits to accommodate legitimate user scenarios:
+        # - 15/min allows normal retry behavior after typos/mistakes
+        # - 100/hour supports users who may need multiple access attempts
+        # Still protects against brute force (15 tries = adequate defense)
         login_rate_limiter = RedisRateLimiter(
-            redis_url=redis_url or "redis://localhost:6379/0",
-            requests_per_minute=5,
-            requests_per_hour=20
+            redis_url=redis_url,
+            requests_per_minute=15,
+            requests_per_hour=100,
+            fallback_to_memory=True  # Allow fallback for Vercel
         )
     return login_rate_limiter

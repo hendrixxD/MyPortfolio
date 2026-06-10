@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "buildCommand": "{{ config.build_command }}",
+  "outputDirectory": "{{ config.output_directory }}",
+  "installCommand": "{{ config.install_command }}",
+  "framework": "{{ config.framework }}",
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "{{ config.python_runtime }}"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index"
+    }
+  ]
+}

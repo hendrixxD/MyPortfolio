@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -41,6 +41,53 @@ const navigation = [
     { name: 'Gallery', href: '/admin/gallery', icon: Image },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
 ];
+
+// Memoized navigation item component to prevent unnecessary re-renders
+const NavigationItem = memo(({
+    item,
+    pathname,
+    collapsed,
+    onMobileClose
+}: {
+    item: typeof navigation[0];
+    pathname: string;
+    collapsed: boolean;
+    onMobileClose: () => void;
+}) => {
+    const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+
+    return (
+        <Link
+            href={item.href}
+            onClick={onMobileClose}
+            title={collapsed ? item.name : undefined}
+            className={`group relative flex items-center gap-3 px-2 py-2.5 text-sm rounded-md
+                transition-all duration-200 ease-in-out cursor-pointer
+                ${active
+                    ? 'text-[#c9a84c] bg-[#c9a84c]/10 border-l-2 border-[#c9a84c] shadow-sm'
+                    : 'text-[#555] hover:bg-[#1a1a1a] hover:text-[#e2d9c8] hover:border-l-2 hover:border-[#c9a84c]/30 border-l-2 border-transparent'}
+                ${collapsed ? 'justify-center' : ''}
+                hover:scale-[1.02] active:scale-[0.98]`}
+        >
+            <item.icon className={`h-4 w-4 flex-shrink-0 transition-transform duration-200
+                ${active ? '' : 'group-hover:scale-110 group-hover:rotate-3'}`}
+            />
+            {!collapsed && (
+                <span className="font-mono text-xs tracking-wide truncate">
+                    {item.name.toUpperCase()}
+                </span>
+            )}
+            {/* Ripple effect indicator */}
+            {!collapsed && (
+                <span className={`absolute right-2 w-1.5 h-1.5 rounded-full transition-all duration-300
+                    ${active ? 'bg-[#c9a84c] opacity-100' : 'bg-transparent opacity-0 group-hover:bg-[#c9a84c]/50 group-hover:opacity-100'}`}
+                />
+            )}
+        </Link>
+    );
+});
+
+NavigationItem.displayName = 'NavigationItem';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -147,39 +194,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Nav */}
                 <nav className="flex-1 overflow-y-auto py-3 space-y-px px-2">
-                    {navigation.map((item) => {
-                        const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => setMobileOpen(false)}
-                                title={collapsed ? item.name : undefined}
-                                className={`group relative flex items-center gap-3 px-2 py-2.5 text-sm rounded-md
-                                    transition-all duration-200 ease-in-out cursor-pointer
-                                    ${active
-                                        ? 'text-[#c9a84c] bg-[#c9a84c]/10 border-l-2 border-[#c9a84c] shadow-sm'
-                                        : 'text-[#555] hover:bg-[#1a1a1a] hover:text-[#e2d9c8] hover:border-l-2 hover:border-[#c9a84c]/30 border-l-2 border-transparent'}
-                                    ${collapsed ? 'justify-center' : ''}
-                                    hover:scale-[1.02] active:scale-[0.98]`}
-                            >
-                                <item.icon className={`h-4 w-4 flex-shrink-0 transition-transform duration-200
-                                    ${active ? '' : 'group-hover:scale-110 group-hover:rotate-3'}`}
-                                />
-                                {!collapsed && (
-                                    <span className="font-mono text-xs tracking-wide truncate">
-                                        {item.name.toUpperCase()}
-                                    </span>
-                                )}
-                                {/* Ripple effect indicator */}
-                                {!collapsed && (
-                                    <span className={`absolute right-2 w-1.5 h-1.5 rounded-full transition-all duration-300
-                                        ${active ? 'bg-[#c9a84c] opacity-100' : 'bg-transparent opacity-0 group-hover:bg-[#c9a84c]/50 group-hover:opacity-100'}`}
-                                    />
-                                )}
-                            </Link>
-                        );
-                    })}
+                    {navigation.map((item) => (
+                        <NavigationItem
+                            key={item.name}
+                            item={item}
+                            pathname={pathname}
+                            collapsed={collapsed}
+                            onMobileClose={() => setMobileOpen(false)}
+                        />
+                    ))}
                 </nav>
 
                 {/* Footer */}
