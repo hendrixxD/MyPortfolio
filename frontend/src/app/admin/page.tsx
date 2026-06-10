@@ -33,7 +33,7 @@ export default function AdminDashboard() {
             }
         };
         fetchStats();
-    }, []);
+    }, []); // Dependency array already present - runs only once on mount
 
     const statCards = [
         { name: 'ARTICLES', value: stats.articles, icon: FileText, href: '/admin/articles' },
