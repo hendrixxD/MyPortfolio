@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 
+// Production validation: ensure required env vars are set
+if (process.env.NODE_ENV === 'production') {
+    const required = ['NEXT_PUBLIC_SITE_URL'];
+    const missing = required.filter(v => !process.env[v]);
+
+    if (missing.length > 0) {
+        throw new Error(
+            `Missing required production env vars: ${missing.join(', ')}\n` +
+            'Use deployment.py to generate configs.'
+        );
+    }
+}
+
 // Detect deployment environment
 const isVercel = process.env.VERCEL === '1';
 const isDocker = process.env.DOCKER === '1' || process.env.DOCKER_BUILD === 'true';
@@ -23,7 +36,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'uploads.heistats.com',
+        hostname: process.env.R2_PUBLIC_HOSTNAME || 'uploads.heistats.com',
       },
       {
         protocol: 'https',

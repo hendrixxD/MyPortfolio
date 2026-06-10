@@ -38,6 +38,34 @@ async def lifespan(app: FastAPI):
     init_sentry()  # Initialize Sentry for error tracking (graceful if not configured)
     logger.info("Starting up Portfolio API...")
 
+    # Validate production configuration
+    if settings.is_production:
+        logger.info(f"🚀 Starting in {settings.ENVIRONMENT} mode")
+
+        # Critical validation checks
+        validations = [
+            (lambda: "localhost" not in settings.SITE_URL.lower(),
+             "SITE_URL contains localhost in production"),
+            (lambda: "localhost" not in settings.CORS_ORIGINS.lower(),
+             "CORS_ORIGINS contains localhost in production"),
+            (lambda: settings.SITE_URL.startswith("https://"),
+             "SITE_URL must use HTTPS in production"),
+            (lambda: settings.R2_PUBLIC_URL.startswith("https://"),
+             "R2_PUBLIC_URL must use HTTPS in production"),
+        ]
+
+        for check, error_msg in validations:
+            if not check():
+                logger.error(f"❌ Configuration error: {error_msg}")
+                raise RuntimeError(
+                    f"Invalid production configuration: {error_msg}\n"
+                    "Use deployment.py to generate valid configs."
+                )
+
+        logger.info("✅ Production configuration validated")
+        logger.info(f"   Platform: {'Vercel' if settings.is_vercel else 'Docker/Cloud Run'}")
+        logger.info(f"   Redis: {'Available' if settings.has_redis else 'Using in-memory fallback'}")
+
     # Check R2 storage configuration (gracefully handles missing credentials)
     from app.services.storage import get_storage_service
     try:
@@ -74,7 +102,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 register_exception_handlers(app)
 
 # Add security headers middleware (first, so it applies to all responses)
-app.add_middleware(SecurityHeadersMiddleware)
+# Environment-aware configuration: strict CSP and HSTS in production
+app.add_middleware(SecurityHeadersMiddleware, is_production=settings.is_production)
 
 # Configure CORS
 app.add_middleware(

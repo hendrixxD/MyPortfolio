@@ -1,9 +1,11 @@
 import { MetadataRoute } from 'next';
 import { getArticleSlugs, getProjectSlugs } from '@/lib/api';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+function generateSitemap(baseUrl: string): Promise<MetadataRoute.Sitemap> {
+    return Promise.resolve(createSitemapEntries(baseUrl));
+}
 
+async function createSitemapEntries(siteUrl: string): Promise<MetadataRoute.Sitemap> {
     // Static pages
     const staticPages = [
         '',
@@ -50,4 +52,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     return [...staticPages, ...articlePages, ...projectPages];
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!siteUrl) {
+        if (process.env.NODE_ENV === 'development') {
+            return generateSitemap('http://localhost:3000');
+        }
+        throw new Error('NEXT_PUBLIC_SITE_URL must be set for production');
+    }
+
+    return createSitemapEntries(siteUrl);
 }

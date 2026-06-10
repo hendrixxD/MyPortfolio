@@ -8,7 +8,15 @@ import { ThemeProvider } from '@/context/ThemeProvider';
 import { PageTracker } from '@/components/PageTracker';
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+    metadataBase: new URL(
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        (() => {
+            if (process.env.NODE_ENV === 'development') {
+                return 'http://localhost:3000';
+            }
+            throw new Error('NEXT_PUBLIC_SITE_URL must be set for production');
+        })()
+    ),
     title: {
         default: 'lengedandungjoshua | Data Engineer & Chemical/Petroleum Technology',
         template: '%s | lengedandungjoshua',
