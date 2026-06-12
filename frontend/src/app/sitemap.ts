@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next';
 import { getArticleSlugs, getProjectSlugs } from '@/lib/api';
 
+// Force dynamic rendering - sitemap generated at request time, not build time
+export const dynamic = 'force-dynamic';
+
 function generateSitemap(baseUrl: string): Promise<MetadataRoute.Sitemap> {
     return Promise.resolve(createSitemapEntries(baseUrl));
 }
