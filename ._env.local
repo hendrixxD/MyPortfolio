@@ -1,0 +1,115 @@
+# ============================================================
+# Docker Compose Production Environment Variables
+# ============================================================
+# This file is used by: docker-compose.prod.yml
+# Shared across: postgres, redis, backend, frontend, nginx
+# ============================================================
+# ⚠️ IMPORTANT:
+#   - This file is for DOCKER DEPLOYMENT ONLY
+#   - For local dev: Use backend/.env and frontend/.env.local
+#   - Never commit this file with real credentials
+# ============================================================
+#
+# Generate secure passwords:
+#   openssl rand -base64 32    # For passwords
+#   openssl rand -base64 48    # For SECRET_KEY
+# ============================================================
+
+# ------------------------------------------------------------
+# DATABASE (PostgreSQL)
+# ------------------------------------------------------------
+# Used by: portfolio_db container
+# Note: DB_HOST and DB_PORT are set in docker-compose.prod.yml
+#       as portfolio_db:5432 (Docker internal network)
+DB_USER=postgres
+DB_PASSWORD=portfolio
+DB_NAME=portfolio
+
+# ------------------------------------------------------------
+# REDIS (Cache & Session Store)
+# ------------------------------------------------------------
+# Used by: redis container
+# Generate with: openssl rand -base64 32
+REDIS_PASSWORD=iPM6IyWw5YH5tZvQbXCKisq5CKQ2vdRS
+
+# ------------------------------------------------------------
+# BACKEND SECURITY
+# ------------------------------------------------------------
+# SECRET_KEY: JWT token signing (CRITICAL)
+# Generate with: openssl rand -base64 48
+SECRET_KEY=FARFKAhqMI2YdlwwMeEONrF4WgA6FvlExm9Z6xIyGPtBpQ4V
+
+# JWT Configuration
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Rate limiting
+RATE_LIMIT_PER_MINUTE=60
+
+# ------------------------------------------------------------
+# CORS (Cross-Origin Resource Sharing)
+# ------------------------------------------------------------
+# Allowed origins (comma-separated, NO SPACES)
+# Production: Add your domain(s)
+CORS_ORIGINS=http://localhost:3000,https://localhost:3000
+
+# ------------------------------------------------------------
+# SITE INFORMATION
+# ------------------------------------------------------------
+SITE_NAME=lengedandungjoshua
+SITE_DESCRIPTION=Data Engineer & Chemical/Petroleum Technology Portfolio
+SITE_URL=http://localhost:3000
+
+# ------------------------------------------------------------
+# API ENDPOINTS
+# ------------------------------------------------------------
+# Backend API URL (accessible from browser)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Frontend site URL
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# ------------------------------------------------------------
+# ADMIN USER
+# ------------------------------------------------------------
+# For database seeding and admin panel access
+ADMIN_EMAIL=admin@localhost.com
+ADMIN_PASSWORD=changeme123
+
+# ------------------------------------------------------------
+# CLOUDFLARE R2 STORAGE
+# ------------------------------------------------------------
+# Get from: Cloudflare Dashboard → R2 → Manage R2 API Tokens
+# Required for file uploads to work
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=https://uploads.heistats.com
+
+# ------------------------------------------------------------
+# SENTRY ERROR TRACKING (Optional)
+# ------------------------------------------------------------
+# Get DSN from: https://sentry.io/settings/projects/
+# Leave empty to disable
+SENTRY_DSN=CHANGE_ME_SENTRY_DSN
+NEXT_PUBLIC_SENTRY_DSN=CHANGE_ME_SENTRY_DSN
+SENTRY_ENVIRONMENT=production
+SENTRY_ORG=
+SENTRY_PROJECT=
+
+# ============================================================
+# DEPLOYMENT CHECKLIST
+# ============================================================
+# Before deploying to production:
+#
+# [ ] Generate secure passwords for DB_PASSWORD, REDIS_PASSWORD
+# [ ] Generate secure SECRET_KEY (48+ characters)
+# [ ] Update CORS_ORIGINS with your production domain(s)
+# [ ] Update SITE_URL with your production domain
+# [ ] Update NEXT_PUBLIC_API_URL with your production API
+# [ ] Set strong ADMIN_PASSWORD
+# [ ] Add R2 credentials (required for uploads)
+# [ ] Optional: Add Sentry DSN for error tracking
+# [ ] Update nginx/conf.d/default.conf with your domain
+# [ ] NEVER commit this file to git
+# ============================================================

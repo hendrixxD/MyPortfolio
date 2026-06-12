@@ -12,9 +12,21 @@ from app.core.logging import get_logger
 
 logger = get_logger()
 
+# Global flag for lazy initialization
+_sentry_initialized = False
+
 
 def init_sentry():
-    """Initialize Sentry for error tracking and performance monitoring."""
+    """
+    Initialize Sentry (idempotent, lazy).
+
+    Called on first error or explicitly. Safe to call multiple times.
+    """
+    global _sentry_initialized
+
+    if _sentry_initialized:
+        return
+
     if not settings.SENTRY_DSN or settings.SENTRY_DSN.startswith("CHANGE_ME"):
         logger.info("Sentry DSN not configured, skipping Sentry initialization")
         return
@@ -38,6 +50,7 @@ def init_sentry():
         ignore_errors=[KeyboardInterrupt],
     )
 
+    _sentry_initialized = True
     logger.info(f"Sentry initialized for environment: {settings.SENTRY_ENVIRONMENT}")
 
 
