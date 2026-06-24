@@ -45,19 +45,34 @@ export async function fetchApi<T>(
         ...options.headers,
     };
 
-    const response = await fetch(url, {
-        ...options,
-        headers,
-        credentials: 'include', // Always include cookies for authentication
-    });
+    // Add timeout to prevent build failures when backend is slow/down
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-        throw new ApiError(error.detail || 'Request failed', response.status);
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers,
+            credentials: 'include', // Always include cookies for authentication
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
+            throw new ApiError(error.detail || 'Request failed', response.status);
+        }
+
+        if (response.status === 204) return undefined as T;
+        return response.json();
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new ApiError('Request timeout', 408);
+        }
+        throw error;
     }
-
-    if (response.status === 204) return undefined as T;
-    return response.json();
 }
 
 // Deprecated: Auth now uses httpOnly cookies, no need for headers
