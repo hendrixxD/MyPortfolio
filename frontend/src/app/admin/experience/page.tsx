@@ -164,7 +164,7 @@ export default function AdminExperiencePage() {
                                 <Field label="Start Date">
                                     <input
                                         type="date"
-                                        value={modal.data.start_date ? String(modal.data.start_date) : ''}
+                                        value={modal.data.start_date && typeof modal.data.start_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(modal.data.start_date) ? modal.data.start_date : ''}
                                         onChange={e => set('start_date', e.target.value || null)}
                                         className="input-field"
                                     />
@@ -172,7 +172,7 @@ export default function AdminExperiencePage() {
                                 <Field label="End Date">
                                     <input
                                         type="date"
-                                        value={modal.data.end_date ? String(modal.data.end_date) : ''}
+                                        value={modal.data.end_date && typeof modal.data.end_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(modal.data.end_date) ? modal.data.end_date : ''}
                                         onChange={e => set('end_date', e.target.value || null)}
                                         className="input-field"
                                         disabled={modal.data.is_current}
