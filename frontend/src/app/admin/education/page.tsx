@@ -29,7 +29,37 @@ export default function AdminEducationPage() {
     useEffect(() => { load(); }, [load]);
 
     const openCreate = () => setModal({ open: true, data: { ...empty }, id: null });
-    const openEdit = (e: Education) => setModal({ open: true, data: { ...e }, id: e.id });
+    const openEdit = (e: Education) => {
+        // Ensure dates are in YYYY-MM-DD format for date inputs
+        const data = { ...e };
+        // Normalize start_date
+        if (data.start_date) {
+            const startMatch = data.start_date.match(/^\d{4}(-\d{2})?(-\d{2})?$/);
+            if (startMatch) {
+                if (!startMatch[1]) {
+                    data.start_date = data.start_date + '-01-01'; // Year only
+                } else if (!startMatch[2]) {
+                    data.start_date = data.start_date + '-01'; // Year-month only
+                }
+            } else {
+                data.start_date = null; // Invalid format, clear it
+            }
+        }
+        // Normalize end_date
+        if (data.end_date) {
+            const endMatch = data.end_date.match(/^\d{4}(-\d{2})?(-\d{2})?$/);
+            if (endMatch) {
+                if (!endMatch[1]) {
+                    data.end_date = data.end_date + '-01-01'; // Year only
+                } else if (!endMatch[2]) {
+                    data.end_date = data.end_date + '-01'; // Year-month only
+                }
+            } else {
+                data.end_date = null; // Invalid format, clear it
+            }
+        }
+        setModal({ open: true, data, id: e.id });
+    };
     const closeModal = () => { setModal({ open: false, data: empty, id: null }); setError(''); };
     const set = (field: string, value: unknown) => setModal(prev => ({ ...prev, data: { ...prev.data, [field]: value } }));
 
@@ -114,8 +144,23 @@ export default function AdminEducationPage() {
                                 <Field label="GPA"><input value={modal.data.gpa ?? ''} onChange={e => set('gpa', e.target.value || null)} className="input-field" /></Field>
                             </div>
                             <div className="grid sm:grid-cols-2 gap-3">
-                                <Field label="Start Date"><input type="date" value={modal.data.start_date ?? ''} onChange={e => set('start_date', e.target.value || null)} className="input-field" /></Field>
-                                <Field label="End Date"><input type="date" value={modal.data.end_date ?? ''} onChange={e => set('end_date', e.target.value || null)} className="input-field" disabled={modal.data.is_current} /></Field>
+                                <Field label="Start Date">
+                                    <input
+                                        type="date"
+                                        value={modal.data.start_date ? String(modal.data.start_date) : ''}
+                                        onChange={e => set('start_date', e.target.value || null)}
+                                        className="input-field"
+                                    />
+                                </Field>
+                                <Field label="End Date">
+                                    <input
+                                        type="date"
+                                        value={modal.data.end_date ? String(modal.data.end_date) : ''}
+                                        onChange={e => set('end_date', e.target.value || null)}
+                                        className="input-field"
+                                        disabled={modal.data.is_current}
+                                    />
+                                </Field>
                             </div>
                             <Field label="Description"><textarea rows={3} value={modal.data.description ?? ''} onChange={e => set('description', e.target.value || null)} className="input-field resize-none" /></Field>
                             <Field label="Achievements"><textarea rows={2} value={modal.data.achievements ?? ''} onChange={e => set('achievements', e.target.value || null)} className="input-field resize-none" /></Field>
